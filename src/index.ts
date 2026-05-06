@@ -72,3 +72,13 @@ export {
   renderAsciiText,
   type RenderAsciiTextOptions,
 } from './render/text.js';
+
+export {
+  frameDurations,
+  loopFrames,
+  mapFrames,
+  takeFrames,
+  withFrameDuration,
+  type FrameMapper,
+  type WithFrameDurationOptions,
+} from './animation/frames.js';
