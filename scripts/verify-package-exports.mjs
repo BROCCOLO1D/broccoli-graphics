@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 const esmChecks = [
   ['broccoli-graphics', 'orderedDither'],
   ['broccoli-graphics/luminance', 'toGrayscale'],
-  ['broccoli-graphics/palette', 'nearestColor'],
+  ['broccoli-graphics/palette', 'quantizeToPalette'],
   ['broccoli-graphics/dither/ordered', 'createBayerMatrix'],
   ['broccoli-graphics/dither/error-diffusion', 'sierraKernel'],
   ['broccoli-graphics/ascii/charset', 'SIMPLE_RAMP'],

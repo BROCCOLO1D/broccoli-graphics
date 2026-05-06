@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { nearestColor, nearestPaletteIndex, normalizePalette, squaredRgbDistance } from './palette.js';
+import {
+  nearestColor,
+  nearestPaletteIndex,
+  normalizePalette,
+  quantizeToPalette,
+  squaredRgbDistance,
+} from './palette.js';
 
 describe('palette utilities', () => {
   it('normalizes tuple and object colors into clamped RGB palette entries', () => {
@@ -25,5 +31,64 @@ describe('palette utilities', () => {
 
   it('rejects empty palettes', () => {
     expect(() => nearestPaletteIndex({ r: 0, g: 0, b: 0 }, [])).toThrow(/palette/i);
+  });
+
+  it('quantizes RGB images to nearest palette colors without mutating the palette', () => {
+    const palette = normalizePalette([
+      [0, 0, 0],
+      [255, 255, 255],
+      [255, 0, 0],
+    ]);
+
+    const output = quantizeToPalette({
+      image: {
+        width: 3,
+        height: 1,
+        channels: 3,
+        data: new Uint8Array([10, 10, 10, 250, 250, 250, 240, 20, 20]),
+      },
+      palette,
+      outputChannels: 3,
+    });
+
+    expect([...output.data]).toEqual([0, 0, 0, 255, 255, 255, 255, 0, 0]);
+    expect(output).toMatchObject({ width: 3, height: 1, channels: 3 });
+    expect(palette[0]).toEqual({ r: 0, g: 0, b: 0, a: 255 });
+  });
+
+  it('supports grayscale input, RGBA output, stride, and caller-provided output buffers', () => {
+    const outputBuffer = new Uint8Array(8);
+    const output = quantizeToPalette({
+      image: {
+        width: 2,
+        height: 1,
+        channels: 1,
+        stride: 4,
+        data: new Uint8Array([30, 220, 99, 99]),
+      },
+      palette: [
+        [0, 0, 0, 128],
+        [255, 255, 255, 64],
+      ],
+      output: outputBuffer,
+    });
+
+    expect(output.data).toBe(outputBuffer);
+    expect([...outputBuffer]).toEqual([0, 0, 0, 128, 255, 255, 255, 64]);
+    expect(output).toMatchObject({ width: 2, height: 1, channels: 4 });
+  });
+
+  it('uses a custom color distance when quantizing', () => {
+    const output = quantizeToPalette({
+      image: { width: 1, height: 1, channels: 3, data: new Uint8Array([120, 250, 250]) },
+      palette: [
+        [0, 255, 255],
+        [255, 0, 0],
+      ],
+      outputChannels: 3,
+      distance: (a, b) => Math.abs(a.r - b.r),
+    });
+
+    expect([...output.data]).toEqual([0, 255, 255]);
   });
 });

@@ -11,7 +11,7 @@ Early `0.0.0` package scaffold. The core APIs are implemented and tested, but th
 ## Features
 
 - BT.709 luminance and grayscale conversion for 1/3/4-channel pixel buffers.
-- Palette utilities with clamped RGB/RGBA normalization and deterministic nearest-color matching.
+- Palette utilities with clamped RGB/RGBA normalization, deterministic nearest-color matching, and image quantization.
 - Ordered dithering with generated power-of-two Bayer matrices.
 - Error diffusion dithering with data-driven Floyd-Steinberg, Atkinson, JJN, Stucki, and Sierra-family kernels.
 - ASCII conversion with configurable character ramps, cell averaging, and invert support.
@@ -165,13 +165,14 @@ Built-in kernels cover Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, S
 ### Palette utilities
 
 ```ts
-import { nearestColor, normalizePalette } from 'broccoli-graphics';
+import { nearestColor, normalizePalette, quantizeToPalette } from 'broccoli-graphics';
 
 const palette = normalizePalette([[0, 0, 0], [255, 255, 255]]);
 const match = nearestColor({ r: 220, g: 230, b: 240 }, palette);
+const indexedLook = quantizeToPalette({ image, palette, outputChannels: 3 });
 ```
 
-The default distance is squared RGB distance and ties resolve to the first palette entry for deterministic output.
+The default distance is squared RGB distance and ties resolve to the first palette entry for deterministic output. `quantizeToPalette` maps 1/3/4-channel image buffers to nearest RGB/RGBA palette colors and accepts caller-provided output buffers for reuse.
 
 ### ASCII conversion and rendering
 

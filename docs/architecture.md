@@ -102,6 +102,7 @@ import { mapFrames } from 'broccoli-graphics/animation/frames';
 
 - Normalize palette input into compact arrays.
 - Find nearest palette color and/or index.
+- Quantize 1/3/4-channel image buffers into nearest RGB/RGBA palette output with reusable output buffers.
 - Provide fast RGB squared-distance default and optional weighted distances.
 - Avoid advanced palette generation in the first pass unless needed by tests/examples.
 

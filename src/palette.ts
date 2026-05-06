@@ -1,4 +1,4 @@
-import type { ColorInput, RgbColor, RgbaColor } from './types.js';
+import { assertValidImage, defaultStride, type ColorInput, type MutablePixelBuffer, type PixelBuffer, type RgbColor, type RgbaColor } from './types.js';
 
 export type ColorDistance = (a: RgbColor, b: RgbColor) => number;
 
@@ -59,3 +59,63 @@ export const nearestColor = (
   palette: ReadonlyArray<RgbaColor>,
   distance: ColorDistance = squaredRgbDistance,
 ): RgbaColor => palette[nearestPaletteIndex(color, palette, distance)]!;
+
+export type PaletteOutputChannels = 3 | 4;
+
+export interface QuantizeToPaletteOptions {
+  readonly image: PixelBuffer;
+  readonly palette: ReadonlyArray<ColorInput>;
+  readonly distance?: ColorDistance;
+  readonly outputChannels?: PaletteOutputChannels;
+  readonly output?: Uint8Array;
+}
+
+const readPixelRgb = (image: PixelBuffer, offset: number): RgbColor => {
+  if (image.channels === 1) {
+    const value = image.data[offset] ?? 0;
+    return { r: value, g: value, b: value };
+  }
+
+  return {
+    r: image.data[offset] ?? 0,
+    g: image.data[offset + 1] ?? 0,
+    b: image.data[offset + 2] ?? 0,
+  };
+};
+
+export const quantizeToPalette = (options: QuantizeToPaletteOptions): MutablePixelBuffer<Uint8Array> => {
+  const { image, distance = squaredRgbDistance, outputChannels = 4 } = options;
+  assertValidImage(image);
+  if (outputChannels !== 3 && outputChannels !== 4) {
+    throw new RangeError('outputChannels must be 3 or 4');
+  }
+
+  const palette = normalizePalette(options.palette);
+  if (palette.length === 0) {
+    throw new RangeError('palette must contain at least one color');
+  }
+
+  const pixelCount = image.width * image.height;
+  const output = options.output ?? new Uint8Array(pixelCount * outputChannels);
+  if (output.length < pixelCount * outputChannels) {
+    throw new RangeError('output is too short for quantized image');
+  }
+
+  const stride = image.stride ?? defaultStride(image.width, image.channels);
+  let outputOffset = 0;
+  for (let y = 0; y < image.height; y++) {
+    const rowOffset = y * stride;
+    for (let x = 0; x < image.width; x++) {
+      const inputOffset = rowOffset + x * image.channels;
+      const color = nearestColor(readPixelRgb(image, inputOffset), palette, distance);
+      output[outputOffset++] = color.r;
+      output[outputOffset++] = color.g;
+      output[outputOffset++] = color.b;
+      if (outputChannels === 4) {
+        output[outputOffset++] = color.a;
+      }
+    }
+  }
+
+  return { width: image.width, height: image.height, channels: outputChannels, data: output };
+};
