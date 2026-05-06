@@ -3,7 +3,9 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
 const esmChecks = [
+  ['broccoli-graphics', 'assertValidChannels'],
   ['broccoli-graphics', 'orderedDither'],
+  ['broccoli-graphics/types', 'assertValidChannels'],
   ['broccoli-graphics/luminance', 'toGrayscale'],
   ['broccoli-graphics/palette', 'quantizeToPaletteIndices'],
   ['broccoli-graphics/dither/ordered', 'createBayerMatrix'],

@@ -228,6 +228,7 @@ Frame helpers operate on iterables and are lazy where possible. They are intenti
 ## Design notes
 
 - **Typed-array first:** hot paths use linear buffers and index arithmetic to avoid per-pixel object allocation.
+- **Runtime-safe raw buffers:** shared validation rejects unsupported channel counts, non-integer dimensions/strides, short buffers, and undersized outputs before hot loops run.
 - **Pure transforms:** functions accept explicit inputs and return new buffers/objects unless an output buffer is supplied.
 - **Small modules:** algorithms are split across luminance, palette, dithering, ASCII, rendering, and animation helpers.
 - **Dependency-light core:** image decoding, terminal control, GIF encoding, and Canvas integration are left to consumers or optional future adapters.
@@ -252,4 +253,4 @@ npm run lint   # TypeScript no-emit check
 npm run examples
 ```
 
-The current quality gates pass with 39 unit tests covering core algorithms and edge cases.
+The current quality gates pass with 59 unit tests covering core algorithms and edge cases.

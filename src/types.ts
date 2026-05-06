@@ -47,10 +47,18 @@ export const assertPositiveInteger = (name: string, value: number): void => {
 
 export const defaultStride = (width: number, channels: PixelChannels): number => width * channels;
 
+export function assertValidChannels(channels: number): asserts channels is PixelChannels {
+  if (channels !== 1 && channels !== 3 && channels !== 4) {
+    throw new RangeError('channels must be 1, 3, or 4');
+  }
+}
+
 export const assertValidImage = (image: PixelBuffer): void => {
   assertPositiveInteger('width', image.width);
   assertPositiveInteger('height', image.height);
+  assertValidChannels(image.channels);
   const stride = image.stride ?? defaultStride(image.width, image.channels);
+  assertPositiveInteger('stride', stride);
   if (stride < image.width * image.channels) {
     throw new RangeError('stride must be at least width * channels');
   }
