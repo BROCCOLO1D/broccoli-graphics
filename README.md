@@ -177,13 +177,16 @@ The default distance is squared RGB distance and ties resolve to the first palet
 ### ASCII conversion and rendering
 
 ```ts
-import { DENSE_RAMP, imageToAscii, renderAsciiText } from 'broccoli-graphics';
+import { DENSE_RAMP, imageToAscii, renderAsciiAnsi, renderAsciiText } from 'broccoli-graphics';
 
 const canvas = imageToAscii({ image, ramp: DENSE_RAMP, cellWidth: 2, cellHeight: 2 });
 const text = renderAsciiText(canvas, { repeatX: 2 });
+const colored = renderAsciiAnsi(canvas, {
+  foreground: ({ y }) => (y % 2 === 0 ? [120, 255, 120] : [80, 180, 255]),
+});
 ```
 
-`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. `renderAsciiText` is the built-in plain text renderer.
+`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. `renderAsciiText` emits plain strings, while `renderAsciiAnsi` adds optional ANSI truecolor foreground/background escapes from fixed colors or per-cell callbacks.
 
 ### Animation helpers
 

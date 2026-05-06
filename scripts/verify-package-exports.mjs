@@ -10,7 +10,7 @@ const esmChecks = [
   ['broccoli-graphics/dither/error-diffusion', 'sierraKernel'],
   ['broccoli-graphics/ascii/charset', 'SIMPLE_RAMP'],
   ['broccoli-graphics/ascii/convert', 'imageToAscii'],
-  ['broccoli-graphics/render/text', 'renderAsciiText'],
+  ['broccoli-graphics/render/text', 'renderAsciiAnsi'],
   ['broccoli-graphics/animation/frames', 'mapFrames'],
 ];
 

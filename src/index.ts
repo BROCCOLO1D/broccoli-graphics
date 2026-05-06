@@ -77,7 +77,11 @@ export {
 } from './ascii/convert.js';
 
 export {
+  renderAsciiAnsi,
   renderAsciiText,
+  type AnsiColorResolver,
+  type AsciiCellContext,
+  type RenderAsciiAnsiOptions,
   type RenderAsciiTextOptions,
 } from './render/text.js';
 

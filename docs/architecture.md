@@ -135,7 +135,7 @@ import { mapFrames } from 'broccoli-graphics/animation/frames';
 ### `render/text`
 
 - Render ASCII cell grids to newline-delimited text.
-- Optionally emit ANSI truecolor/256-color escape sequences without dependencies.
+- Emit ANSI truecolor foreground/background escape sequences without dependencies, using fixed colors or per-cell callbacks.
 - Keep colorization opt-in because many consumers need plain strings.
 
 ## Testing strategy
