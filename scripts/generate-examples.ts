@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import gifenc from 'gifenc';
 import sharp from 'sharp';
 import {
   atkinsonKernel,
@@ -12,6 +13,8 @@ import {
   renderAsciiText,
   type PixelBuffer,
 } from '../src/index.js';
+
+const { GIFEncoder, applyPalette, quantize } = gifenc;
 
 const outputDir = join(process.cwd(), 'examples', 'output');
 const inputPath = join(process.cwd(), 'examples', 'input', 'doll-face.jpg');
@@ -174,9 +177,65 @@ const generateAsciiAssets = async (): Promise<void> => {
   await sharp(Buffer.from(svg)).png({ compressionLevel: 9, adaptiveFiltering: false }).toFile(join(outputDir, 'doll-face-ascii.png'));
 };
 
+interface GifStage {
+  readonly fileName: string;
+  readonly label: string;
+  readonly delayMs: number;
+}
+
+const gifStages: readonly GifStage[] = [
+  { fileName: 'doll-face-original.png', label: 'original resized preview', delayMs: 900 },
+  { fileName: 'doll-face-ordered-bayer.png', label: 'ordered Bayer dither', delayMs: 900 },
+  { fileName: 'doll-face-floyd-steinberg.png', label: 'Floyd–Steinberg diffusion', delayMs: 900 },
+  { fileName: 'doll-face-atkinson.png', label: 'Atkinson diffusion', delayMs: 1200 },
+];
+
+const stageLabelSvg = (stage: GifStage): Buffer =>
+  Buffer.from(`
+    <svg width="${previewWidth}" height="48" viewBox="0 0 ${previewWidth} 48" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${previewWidth}" height="48" fill="#111827" fill-opacity="0.86" />
+      <text x="18" y="31" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#fffaf7">${stage.label}</text>
+    </svg>
+  `);
+
+const loadGifStageRgba = async (stage: GifStage): Promise<Uint8Array> => {
+  const { data, info } = await sharp(join(outputDir, stage.fileName))
+    .resize({ width: previewWidth, height: previewWidth * 1.5, fit: 'cover' })
+    .composite([{ input: stageLabelSvg(stage), gravity: 'south' }])
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  if (info.width !== previewWidth || info.height !== previewWidth * 1.5 || info.channels !== 4) {
+    throw new Error(`unexpected GIF frame geometry for ${stage.fileName}`);
+  }
+
+  return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+};
+
+const generateAnimatedGifAsset = async (): Promise<void> => {
+  const gif = GIFEncoder({ initialCapacity: previewWidth * previewWidth * gifStages.length });
+  const height = previewWidth * 1.5;
+
+  for (const [index, stage] of gifStages.entries()) {
+    const rgba = await loadGifStageRgba(stage);
+    const palette = quantize(rgba, 128, { format: 'rgb565' });
+    gif.writeFrame(applyPalette(rgba, palette, 'rgb565'), previewWidth, height, {
+      palette,
+      delay: stage.delayMs,
+      repeat: index === 0 ? 0 : undefined,
+      dispose: 2,
+    });
+  }
+
+  gif.finish();
+  writeFileSync(join(outputDir, 'doll-face-conversion-stages.gif'), gif.bytes());
+};
+
 mkdirSync(outputDir, { recursive: true });
 const preview = await loadRgbPreview(previewWidth);
 await generateDitherAssets(preview);
 await generateAsciiAssets();
+await generateAnimatedGifAsset();
 
 console.log(`Generated doll-face README assets in ${outputDir}`);
