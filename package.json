@@ -2,7 +2,25 @@
   "name": "broccoli-graphics",
   "version": "0.0.0",
   "description": "High-performance TypeScript graphics toolkit for dithering, ASCII art, and animation",
-  "main": "index.js",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    "examples/output"
+  ],
+  "sideEffects": false,
   "scripts": {
     "test": "vitest run",
     "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap",
@@ -14,14 +32,21 @@
     "type": "git",
     "url": "git+https://github.com/BROCCOLO1D/broccoli-graphics.git"
   },
-  "keywords": [],
+  "keywords": [
+    "ascii-art",
+    "dithering",
+    "floyd-steinberg",
+    "graphics",
+    "image-processing",
+    "ordered-dithering",
+    "typescript"
+  ],
   "author": "",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/BROCCOLO1D/broccoli-graphics/issues"
   },
   "homepage": "https://github.com/BROCCOLO1D/broccoli-graphics#readme",
-  "type": "module",
   "devDependencies": {
     "@types/node": "^25.6.0",
     "tsup": "^8.5.1",
