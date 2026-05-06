@@ -20,8 +20,8 @@ const { GIFEncoder, applyPalette, quantize } = gifenc;
 const outputDir = join(process.cwd(), 'examples', 'output');
 const dollFaceInputPath = join(process.cwd(), 'examples', 'input', 'doll-face.jpg');
 const sunRunnerInputPath = join(process.cwd(), 'examples', 'input', 'sun-runner.jpg');
+const statementGifInputPath = join(process.cwd(), 'examples', 'input', 'statement-source.gif');
 const previewWidth = 360;
-const statementWidth = 497;
 const asciiSourceWidth = 180;
 const asciiCellWidth = 2;
 const asciiCellHeight = 3;
@@ -33,6 +33,13 @@ interface RawRgbImage extends PixelBuffer<Uint8Array> {
 
 interface RawGrayImage extends PixelBuffer<Uint8Array> {
   readonly channels: 1;
+}
+
+interface AnimatedRgbSource {
+  readonly width: number;
+  readonly height: number;
+  readonly frames: ReadonlyArray<RawRgbImage>;
+  readonly delays: ReadonlyArray<number>;
 }
 
 const loadRgbPreview = async (inputPath: string, width: number): Promise<RawRgbImage> => {
@@ -101,6 +108,37 @@ const loadAsciiColorSource = async (): Promise<RawRgbImage> => {
   };
 };
 
+const loadAnimatedRgbSource = async (inputPath: string): Promise<AnimatedRgbSource> => {
+  const metadata = await sharp(inputPath, { animated: true }).metadata();
+  const { data, info } = await sharp(inputPath, { animated: true })
+    .removeAlpha()
+    .modulate({ saturation: 1.08, brightness: 1.04 })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const width = info.width;
+  const height = info.pageHeight ?? info.height;
+  const pages = info.pages ?? metadata.pages ?? 1;
+  if (info.channels !== 3 || !width || !height || pages < 1) {
+    throw new Error(`unexpected animated GIF input geometry for ${inputPath}`);
+  }
+
+  const frameSize = width * height * info.channels;
+  const frames: RawRgbImage[] = [];
+  for (let frameIndex = 0; frameIndex < pages; frameIndex++) {
+    const start = frameIndex * frameSize;
+    frames.push({
+      width,
+      height,
+      channels: 3,
+      data: new Uint8Array(data.buffer, data.byteOffset + start, frameSize),
+    });
+  }
+
+  const delays = metadata.delay?.length === pages ? metadata.delay : Array.from({ length: pages }, () => 160);
+  return { width, height, frames, delays };
+};
+
 const writeGrayscalePng = async (name: string, image: PixelBuffer<Uint8Array>): Promise<void> => {
   await sharp(image.data, {
     raw: { width: image.width, height: image.height, channels: 1 },
@@ -130,21 +168,6 @@ const generateDitherAssets = async (inputPath: string, prefix: string, preview: 
   );
 };
 
-
-const rgbImageToRgba = (image: PixelBuffer<Uint8Array>): Uint8Array => {
-  const pixelCount = image.width * image.height;
-  const rgba = new Uint8Array(pixelCount * 4);
-  for (let index = 0; index < pixelCount; index++) {
-    const sourceOffset = index * image.channels;
-    const targetOffset = index * 4;
-    const r = image.data[sourceOffset] ?? 0;
-    rgba[targetOffset] = r;
-    rgba[targetOffset + 1] = image.channels === 1 ? r : (image.data[sourceOffset + 1] ?? 0);
-    rgba[targetOffset + 2] = image.channels === 1 ? r : (image.data[sourceOffset + 2] ?? 0);
-    rgba[targetOffset + 3] = 255;
-  }
-  return rgba;
-};
 
 const colorizedDitherFrame = (source: RawRgbImage, dithered: PixelBuffer<Uint8Array>): Uint8Array => {
   const pixelCount = source.width * source.height;
@@ -209,23 +232,23 @@ const sampledPalette = (image: RawRgbImage, columns = 8, rows = 8): ReadonlyArra
   return colors;
 };
 
-const generateSunRunnerStatementGif = async (): Promise<void> => {
-  const source = await loadRgbPreview(sunRunnerInputPath, statementWidth);
-  const paletteFrame = quantizeToPalette({
-    image: source,
-    outputChannels: 3,
-    palette: sampledPalette(source),
+const generateStatementGif = async (): Promise<void> => {
+  const animation = await loadAnimatedRgbSource(statementGifInputPath);
+  const frames = animation.frames.map((source, index) => {
+    const quantized = quantizeToPalette({
+      image: source,
+      outputChannels: 3,
+      palette: sampledPalette(source, 6, 4),
+    });
+    const paletteFrame: RawRgbImage = { ...quantized, channels: 3 };
+    const dithered = errorDiffuse({ image: paletteFrame, kernel: floydSteinbergKernel, levels: 2, serpentine: true });
+    return {
+      rgba: colorizedDitherFrame(paletteFrame, dithered),
+      delayMs: animation.delays[index] ?? 160,
+    };
   });
-  const ordered = orderedDither({ image: source, matrix: createBayerMatrix(8), levels: 2 });
-  const floyd = errorDiffuse({ image: source, kernel: floydSteinbergKernel, levels: 2, serpentine: true });
-  const atkinson = errorDiffuse({ image: source, kernel: atkinsonKernel, levels: 2, serpentine: true });
 
-  writeGif('sun-runner-statement.gif', source.width, source.height, [
-    { rgba: rgbImageToRgba(paletteFrame), delayMs: 900 },
-    { rgba: colorizedDitherFrame(source, ordered), delayMs: 700 },
-    { rgba: colorizedDitherFrame(source, floyd), delayMs: 700 },
-    { rgba: colorizedDitherFrame(source, atkinson), delayMs: 900 },
-  ]);
+  writeGif('sun-runner-statement.gif', animation.width, animation.height, frames);
 };
 
 const hexByte = (value: number): string => value.toString(16).padStart(2, '0');
@@ -328,7 +351,7 @@ const dollFacePreview = await loadRgbPreview(dollFaceInputPath, previewWidth);
 const sunRunnerPreview = await loadRgbPreview(sunRunnerInputPath, previewWidth);
 await generateDitherAssets(dollFaceInputPath, 'doll-face', dollFacePreview);
 await generateDitherAssets(sunRunnerInputPath, 'sun-runner', sunRunnerPreview);
-await generateSunRunnerStatementGif();
+await generateStatementGif();
 await generateAsciiAssets();
 await generateAnimatedGifAsset();
 

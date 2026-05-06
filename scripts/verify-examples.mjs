@@ -51,11 +51,16 @@ assert(asciiText.some((line) => line.includes('@')), 'doll-face-ascii.txt should
 const statementGifPath = assertFile('sun-runner-statement.gif');
 const statementGifMetadata = await sharp(statementGifPath, { animated: true }).metadata();
 assert(statementGifMetadata.format === 'gif', `sun-runner-statement.gif should be a GIF, received ${statementGifMetadata.format}`);
-assert(statementGifMetadata.width === 497, `sun-runner-statement.gif width should be 497, received ${statementGifMetadata.width}`);
-assert(statementGifMetadata.pageHeight === 420, `sun-runner-statement.gif frame height should be 420, received ${statementGifMetadata.pageHeight}`);
-assert(statementGifMetadata.pages === 4, `sun-runner-statement.gif should contain 4 frames, received ${statementGifMetadata.pages}`);
+assert(statementGifMetadata.width === 360, `sun-runner-statement.gif width should be 360, received ${statementGifMetadata.width}`);
+assert(statementGifMetadata.pageHeight === 225, `sun-runner-statement.gif frame height should be 225, received ${statementGifMetadata.pageHeight}`);
+assert(statementGifMetadata.pages === 17, `sun-runner-statement.gif should contain 17 frames, received ${statementGifMetadata.pages}`);
 assert(
-  JSON.stringify(statementGifMetadata.delay) === JSON.stringify([900, 700, 700, 900]),
+  JSON.stringify(statementGifMetadata.delay) === JSON.stringify([
+    170, 160, 170, 170, 160,
+    170, 170, 160, 170, 170,
+    160, 170, 170, 160, 170,
+    170, 170,
+  ]),
   `sun-runner-statement.gif frame delays changed: ${JSON.stringify(statementGifMetadata.delay)}`,
 );
 assert(statementGifMetadata.loop === 0, `sun-runner-statement.gif should loop forever, received loop=${statementGifMetadata.loop}`);

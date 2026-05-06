@@ -2,7 +2,7 @@
 
 Small, dependency-free TypeScript graphics primitives for typed-array pixel buffers.
 
-![High-fidelity sun runner processed with broccoli-graphics](examples/output/sun-runner-statement.gif)
+![Animated GIF converted with broccoli-graphics](examples/output/sun-runner-statement.gif)
 
 Dither, quantize, convert to ASCII, render SVG/text, and build lightweight frame pipelines from raw buffers. The core works with `Uint8Array`, `Uint8ClampedArray`, and browser `ImageData.data`.
 
@@ -98,7 +98,7 @@ npm run examples
 npm run verify:examples
 ```
 
-The script decodes and resizes the input JPEGs with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders a colorized ASCII canvas through `renderAsciiSvg`, rasterizes that SVG to a crisp PNG, and encodes the statement-piece and conversion-stage GIFs with dev-only `gifenc` for README embedding.
+The script decodes and resizes the input JPEGs with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders a colorized ASCII canvas through `renderAsciiSvg`, converts the animated statement GIF frame-by-frame through the same raw-buffer pipeline, and encodes README GIFs with dev-only `gifenc`.
 
 Core usage mirrors the generation pipeline:
 
