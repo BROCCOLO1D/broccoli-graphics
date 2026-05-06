@@ -1,1 +1,45 @@
-export const version = '0.0.0';
+export { version } from './version.js';
+
+export type {
+  BayerMatrix,
+  ColorInput,
+  ImageFrame,
+  MutablePixelBuffer,
+  PixelBuffer,
+  PixelChannels,
+  RgbColor,
+  RgbaColor,
+  Size,
+} from './types.js';
+
+export {
+  assertPositiveInteger,
+  assertValidImage,
+  defaultStride,
+} from './types.js';
+
+export {
+  bt709Luminance,
+  luminance,
+  toGrayscale,
+  type LuminanceCoefficients,
+  type LuminanceOptions,
+  type ToGrayscaleOptions,
+} from './luminance.js';
+
+export {
+  clampByte,
+  nearestColor,
+  nearestPaletteIndex,
+  normalizeColor,
+  normalizePalette,
+  squaredRgbDistance,
+  type ColorDistance,
+} from './palette.js';
+
+export {
+  createBayerMatrix,
+  orderedDither,
+  thresholdAt,
+  type OrderedDitherOptions,
+} from './dither/ordered.js';
