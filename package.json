@@ -1,0 +1,32 @@
+{
+  "name": "broccoli-graphics",
+  "version": "0.0.0",
+  "description": "High-performance TypeScript graphics toolkit for dithering, ASCII art, and animation",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap",
+    "dev": "tsx examples/basic.ts",
+    "lint": "tsc --noEmit",
+    "examples": "tsx scripts/generate-examples.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BROCCOLO1D/broccoli-graphics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BROCCOLO1D/broccoli-graphics/issues"
+  },
+  "homepage": "https://github.com/BROCCOLO1D/broccoli-graphics#readme",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
+}
