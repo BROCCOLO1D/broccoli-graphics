@@ -125,6 +125,8 @@ export interface ErrorDiffuseOptions {
   readonly image: PixelBuffer;
   readonly kernel?: ErrorDiffusionKernel;
   readonly levels?: number;
+  /** Alternate scan direction on every row and mirror horizontal kernel offsets to reduce directional artifacts. */
+  readonly serpentine?: boolean;
   readonly output?: Uint8Array;
 }
 
@@ -146,7 +148,7 @@ const validateKernel = (kernel: ErrorDiffusionKernel): void => {
 };
 
 export const errorDiffuse = (options: ErrorDiffuseOptions): PixelBuffer<Uint8Array> => {
-  const { image, kernel = floydSteinbergKernel, levels = 2 } = options;
+  const { image, kernel = floydSteinbergKernel, levels = 2, serpentine = false } = options;
   assertValidImage(image);
   validateKernel(kernel);
   // Validate once before entering the pixel loop.
@@ -162,7 +164,13 @@ export const errorDiffuse = (options: ErrorDiffuseOptions): PixelBuffer<Uint8Arr
   work.set(toGrayscale(image));
 
   for (let y = 0; y < image.height; y++) {
-    for (let x = 0; x < image.width; x++) {
+    const reverse = serpentine && y % 2 === 1;
+    const xStart = reverse ? image.width - 1 : 0;
+    const xEnd = reverse ? -1 : image.width;
+    const xStep = reverse ? -1 : 1;
+    const horizontalDirection = reverse ? -1 : 1;
+
+    for (let x = xStart; x !== xEnd; x += xStep) {
       const index = y * image.width + x;
       const oldValue = work[index] ?? 0;
       const newValue = quantizeLevel(oldValue, levels);
@@ -174,7 +182,7 @@ export const errorDiffuse = (options: ErrorDiffuseOptions): PixelBuffer<Uint8Arr
       }
 
       for (const offset of kernel.offsets) {
-        const xx = x + offset.dx;
+        const xx = x + offset.dx * horizontalDirection;
         const yy = y + offset.dy;
         if (xx < 0 || xx >= image.width || yy < 0 || yy >= image.height) {
           continue;

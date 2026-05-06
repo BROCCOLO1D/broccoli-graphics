@@ -119,11 +119,11 @@ const generateDitherAssets = async (preview: RawRgbImage): Promise<void> => {
   );
   await writeGrayscalePng(
     'doll-face-floyd-steinberg.png',
-    errorDiffuse({ image: preview, kernel: floydSteinbergKernel, levels: 2 }),
+    errorDiffuse({ image: preview, kernel: floydSteinbergKernel, levels: 2, serpentine: true }),
   );
   await writeGrayscalePng(
     'doll-face-atkinson.png',
-    errorDiffuse({ image: preview, kernel: atkinsonKernel, levels: 2 }),
+    errorDiffuse({ image: preview, kernel: atkinsonKernel, levels: 2, serpentine: true }),
   );
 };
 
@@ -156,7 +156,7 @@ const generateAsciiAssets = async (): Promise<void> => {
   const asciiSource = await loadAsciiSource();
   const asciiColors = await loadAsciiColorSource();
   const ascii = imageToAscii({
-    image: errorDiffuse({ image: asciiSource, kernel: floydSteinbergKernel, levels: 2 }),
+    image: errorDiffuse({ image: asciiSource, kernel: floydSteinbergKernel, levels: 2, serpentine: true }),
     ramp: ' @',
     cellWidth: asciiCellWidth,
     cellHeight: asciiCellHeight,

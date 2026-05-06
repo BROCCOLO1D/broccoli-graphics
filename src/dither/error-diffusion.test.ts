@@ -96,6 +96,20 @@ describe('errorDiffuse', () => {
     expect([...output.data]).toEqual([255, 0]);
   });
 
+  it('supports serpentine scanning by mirroring diffusion on odd rows', () => {
+    const image = { width: 3, height: 2, channels: 1 as const, data: new Uint8Array([80, 120, 160, 80, 120, 160]) };
+
+    expect([...errorDiffuse({ image, kernel: floydSteinbergKernel, levels: 2 }).data]).toEqual([0, 255, 0, 0, 255, 255]);
+    expect([...errorDiffuse({ image, kernel: floydSteinbergKernel, levels: 2, serpentine: true }).data]).toEqual([
+      0,
+      255,
+      0,
+      0,
+      0,
+      255,
+    ]);
+  });
+
   it('supports caller-provided output buffers', () => {
     const outputBuffer = new Uint8Array(1);
     const output = errorDiffuse({

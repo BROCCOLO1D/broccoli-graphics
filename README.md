@@ -171,12 +171,12 @@ import {
   stuckiKernel,
 } from 'broccoli-graphics';
 
-const fs = errorDiffuse({ image, kernel: floydSteinbergKernel, levels: 2 });
-const atkinson = errorDiffuse({ image, kernel: atkinsonKernel, levels: 2 });
+const fs = errorDiffuse({ image, kernel: floydSteinbergKernel, levels: 2, serpentine: true });
+const atkinson = errorDiffuse({ image, kernel: atkinsonKernel, levels: 2, serpentine: true });
 const smoother = errorDiffuse({ image, kernel: sierraKernel, levels: 2 });
 ```
 
-Built-in kernels cover Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite. Kernels are plain data (`dx`, `dy`, `weight`) so additional diffusion algorithms can be added without changing the scanline engine.
+Built-in kernels cover Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite. Kernels are plain data (`dx`, `dy`, `weight`) so additional diffusion algorithms can be added without changing the scanline engine. Set `serpentine: true` to alternate scan direction by row and mirror horizontal kernel offsets, reducing one-way streaking artifacts in photographic previews while keeping output deterministic.
 
 ### Palette utilities
 
@@ -237,7 +237,7 @@ See [`docs/architecture.md`](docs/architecture.md) for module boundaries and ext
 ## Performance notes
 
 - Ordered dithering is `O(width * height)` time and writes one byte per output pixel for grayscale output.
-- Error diffusion is `O(width * height * kernelSize)` and currently uses a full `Float32Array` working buffer for clarity and deterministic tests. A rolling row-buffer implementation can reduce memory later.
+- Error diffusion is `O(width * height * kernelSize)` and currently uses a full `Float32Array` working buffer for clarity and deterministic tests. Serpentine scanning keeps the same complexity while improving directional artifact behavior; a rolling row-buffer implementation can reduce memory later.
 - ASCII conversion averages source pixels per output cell. Larger `cellWidth`/`cellHeight` reduce output size but still read each source pixel once.
 - Supplying reusable `output` buffers to dither functions avoids repeated allocations in animation loops.
 
