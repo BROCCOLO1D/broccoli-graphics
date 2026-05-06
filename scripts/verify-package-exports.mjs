@@ -3,14 +3,17 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
 const esmChecks = [
+  ['broccoli-graphics', 'assertValidChannels'],
   ['broccoli-graphics', 'orderedDither'],
+  ['broccoli-graphics/types', 'assertValidChannels'],
   ['broccoli-graphics/luminance', 'toGrayscale'],
-  ['broccoli-graphics/palette', 'quantizeToPalette'],
+  ['broccoli-graphics/palette', 'quantizeToPaletteIndices'],
   ['broccoli-graphics/dither/ordered', 'createBayerMatrix'],
   ['broccoli-graphics/dither/error-diffusion', 'sierraKernel'],
   ['broccoli-graphics/ascii/charset', 'SIMPLE_RAMP'],
   ['broccoli-graphics/ascii/convert', 'imageToAscii'],
   ['broccoli-graphics/render/text', 'renderAsciiAnsi'],
+  ['broccoli-graphics/render/svg', 'renderAsciiSvg'],
   ['broccoli-graphics/animation/frames', 'mapFrames'],
 ];
 

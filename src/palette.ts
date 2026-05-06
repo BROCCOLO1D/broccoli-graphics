@@ -54,6 +54,36 @@ export const nearestPaletteIndex = (
   return bestIndex;
 };
 
+const squaredRgbDistanceValues = (ar: number, ag: number, ab: number, b: RgbColor): number => {
+  const dr = ar - b.r;
+  const dg = ag - b.g;
+  const db = ab - b.b;
+  return dr * dr + dg * dg + db * db;
+};
+
+const nearestPaletteIndexRgb = (
+  r: number,
+  g: number,
+  b: number,
+  palette: ReadonlyArray<RgbaColor>,
+  distance: ColorDistance,
+): number => {
+  if (distance !== squaredRgbDistance) {
+    return nearestPaletteIndex({ r, g, b }, palette, distance);
+  }
+
+  let bestIndex = 0;
+  let bestDistance = squaredRgbDistanceValues(r, g, b, palette[0]!);
+  for (let index = 1; index < palette.length; index++) {
+    const nextDistance = squaredRgbDistanceValues(r, g, b, palette[index]!);
+    if (nextDistance < bestDistance) {
+      bestDistance = nextDistance;
+      bestIndex = index;
+    }
+  }
+  return bestIndex;
+};
+
 export const nearestColor = (
   color: RgbColor,
   palette: ReadonlyArray<RgbaColor>,
@@ -70,17 +100,19 @@ export interface QuantizeToPaletteOptions {
   readonly output?: Uint8Array;
 }
 
-const readPixelRgb = (image: PixelBuffer, offset: number): RgbColor => {
-  if (image.channels === 1) {
-    const value = image.data[offset] ?? 0;
-    return { r: value, g: value, b: value };
-  }
+export interface QuantizeToPaletteIndicesOptions {
+  readonly image: PixelBuffer;
+  readonly palette: ReadonlyArray<ColorInput>;
+  readonly distance?: ColorDistance;
+  readonly output?: Uint8Array;
+}
 
-  return {
-    r: image.data[offset] ?? 0,
-    g: image.data[offset + 1] ?? 0,
-    b: image.data[offset + 2] ?? 0,
-  };
+const preparePalette = (paletteInput: ReadonlyArray<ColorInput>): RgbaColor[] => {
+  const palette = normalizePalette(paletteInput);
+  if (palette.length === 0) {
+    throw new RangeError('palette must contain at least one color');
+  }
+  return palette;
 };
 
 export const quantizeToPalette = (options: QuantizeToPaletteOptions): MutablePixelBuffer<Uint8Array> => {
@@ -90,10 +122,7 @@ export const quantizeToPalette = (options: QuantizeToPaletteOptions): MutablePix
     throw new RangeError('outputChannels must be 3 or 4');
   }
 
-  const palette = normalizePalette(options.palette);
-  if (palette.length === 0) {
-    throw new RangeError('palette must contain at least one color');
-  }
+  const palette = preparePalette(options.palette);
 
   const pixelCount = image.width * image.height;
   const output = options.output ?? new Uint8Array(pixelCount * outputChannels);
@@ -107,7 +136,10 @@ export const quantizeToPalette = (options: QuantizeToPaletteOptions): MutablePix
     const rowOffset = y * stride;
     for (let x = 0; x < image.width; x++) {
       const inputOffset = rowOffset + x * image.channels;
-      const color = nearestColor(readPixelRgb(image, inputOffset), palette, distance);
+      const r = image.data[inputOffset] ?? 0;
+      const g = image.channels === 1 ? r : (image.data[inputOffset + 1] ?? 0);
+      const b = image.channels === 1 ? r : (image.data[inputOffset + 2] ?? 0);
+      const color = palette[nearestPaletteIndexRgb(r, g, b, palette, distance)]!;
       output[outputOffset++] = color.r;
       output[outputOffset++] = color.g;
       output[outputOffset++] = color.b;
@@ -118,4 +150,35 @@ export const quantizeToPalette = (options: QuantizeToPaletteOptions): MutablePix
   }
 
   return { width: image.width, height: image.height, channels: outputChannels, data: output };
+};
+
+export const quantizeToPaletteIndices = (options: QuantizeToPaletteIndicesOptions): MutablePixelBuffer<Uint8Array> => {
+  const { image, distance = squaredRgbDistance } = options;
+  assertValidImage(image);
+
+  const palette = preparePalette(options.palette);
+  if (palette.length > 256) {
+    throw new RangeError('palette must contain 256 colors or fewer for indexed output');
+  }
+
+  const pixelCount = image.width * image.height;
+  const output = options.output ?? new Uint8Array(pixelCount);
+  if (output.length < pixelCount) {
+    throw new RangeError('output is too short for indexed image');
+  }
+
+  const stride = image.stride ?? defaultStride(image.width, image.channels);
+  let outputOffset = 0;
+  for (let y = 0; y < image.height; y++) {
+    const rowOffset = y * stride;
+    for (let x = 0; x < image.width; x++) {
+      const inputOffset = rowOffset + x * image.channels;
+      const r = image.data[inputOffset] ?? 0;
+      const g = image.channels === 1 ? r : (image.data[inputOffset + 1] ?? 0);
+      const b = image.channels === 1 ? r : (image.data[inputOffset + 2] ?? 0);
+      output[outputOffset++] = nearestPaletteIndexRgb(r, g, b, palette, distance);
+    }
+  }
+
+  return { width: image.width, height: image.height, channels: 1, data: output };
 };

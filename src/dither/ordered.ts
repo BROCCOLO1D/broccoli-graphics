@@ -1,5 +1,5 @@
 import { assertPositiveInteger, assertValidImage, defaultStride, type BayerMatrix, type PixelBuffer } from '../types.js';
-import { toGrayscale } from '../luminance.js';
+import { toGrayscale, type ToGrayscaleOptions } from '../luminance.js';
 
 const isPowerOfTwo = (value: number): boolean => (value & (value - 1)) === 0;
 
@@ -43,7 +43,7 @@ export const thresholdAt = (matrix: BayerMatrix, x: number, y: number): number =
   return ((matrix.data[wrappedY * matrix.size + wrappedX] ?? 0) + 0.5) / (matrix.size * matrix.size);
 };
 
-export interface OrderedDitherOptions {
+export interface OrderedDitherOptions extends ToGrayscaleOptions {
   readonly image: PixelBuffer;
   readonly matrix?: BayerMatrix;
   readonly levels?: number;
@@ -73,7 +73,7 @@ export const orderedDither = (options: OrderedDitherOptions): PixelBuffer<Uint8A
     throw new RangeError('output is too short for dithered image');
   }
 
-  const grayscale = image.channels === 1 && image.stride === undefined ? image.data : toGrayscale(image);
+  const grayscale = image.channels === 1 && image.stride === undefined ? image.data : toGrayscale(image, options);
   const stride = image.channels === 1 ? (image.stride ?? defaultStride(image.width, 1)) : image.width;
   let out = 0;
 

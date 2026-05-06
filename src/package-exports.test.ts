@@ -16,6 +16,7 @@ const expectedSubpaths = [
   './ascii/charset',
   './ascii/convert',
   './render/text',
+  './render/svg',
   './animation/frames',
 ];
 
@@ -34,7 +35,7 @@ describe('package exports', () => {
   it('builds each public subpath as its own declaration-bearing entry', () => {
     const buildScript = packageJson.scripts.build;
 
-    for (const entry of ['src/index.ts', 'src/dither/ordered.ts', 'src/ascii/convert.ts', 'src/animation/frames.ts']) {
+    for (const entry of ['src/index.ts', 'src/dither/ordered.ts', 'src/ascii/convert.ts', 'src/render/svg.ts', 'src/animation/frames.ts']) {
       expect(buildScript).toContain(entry);
     }
   });

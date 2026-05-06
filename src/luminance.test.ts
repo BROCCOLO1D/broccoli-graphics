@@ -13,8 +13,17 @@ describe('luminance', () => {
     closeTo(luminance(255, 255, 255), 255);
   });
 
+  it('can compute linear-light relative luminance scaled to byte range', () => {
+    closeTo(luminance(128, 128, 128, { transfer: 'linear' }), 55.0444);
+    closeTo(luminance(255, 255, 255, { transfer: 'linear' }), 255);
+  });
+
   it('can composite transparent pixels against a background before luminance', () => {
     closeTo(luminance(255, 255, 255, { alpha: 128, background: { r: 0, g: 0, b: 0 } }), 128);
+  });
+
+  it('rejects unsupported transfer functions at runtime', () => {
+    expect(() => luminance(0, 0, 0, { transfer: 'lab' as 'encoded' })).toThrow(/transfer/);
   });
 });
 
@@ -23,6 +32,12 @@ describe('toGrayscale', () => {
     const gray = toGrayscale({ width: 2, height: 1, channels: 3, data: new Uint8Array([255, 0, 0, 0, 0, 255]) });
 
     expect([...gray]).toEqual([54, 18]);
+  });
+
+  it('applies linear-light luminance to grayscale conversion when requested', () => {
+    const gray = toGrayscale({ width: 1, height: 1, channels: 3, data: new Uint8Array([128, 128, 128]) }, { transfer: 'linear' });
+
+    expect([...gray]).toEqual([55]);
   });
 
   it('preserves single-channel buffers by copying them', () => {

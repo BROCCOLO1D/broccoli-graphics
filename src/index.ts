@@ -14,6 +14,7 @@ export type {
 
 export {
   assertPositiveInteger,
+  assertValidChannels,
   assertValidImage,
   defaultStride,
 } from './types.js';
@@ -24,6 +25,7 @@ export {
   toGrayscale,
   type LuminanceCoefficients,
   type LuminanceOptions,
+  type LuminanceTransfer,
   type ToGrayscaleOptions,
 } from './luminance.js';
 
@@ -34,9 +36,11 @@ export {
   normalizeColor,
   normalizePalette,
   quantizeToPalette,
+  quantizeToPaletteIndices,
   squaredRgbDistance,
   type ColorDistance,
   type PaletteOutputChannels,
+  type QuantizeToPaletteIndicesOptions,
   type QuantizeToPaletteOptions,
 } from './palette.js';
 
@@ -84,6 +88,13 @@ export {
   type RenderAsciiAnsiOptions,
   type RenderAsciiTextOptions,
 } from './render/text.js';
+
+export {
+  renderAsciiSvg,
+  type AsciiSvgCellContext,
+  type RenderAsciiSvgOptions,
+  type SvgPaintResolver,
+} from './render/svg.js';
 
 export {
   frameDurations,
