@@ -48,6 +48,18 @@ assert(asciiText.length === 69, `doll-face-ascii.txt should have 69 rows, receiv
 assert(asciiText.every((line) => line.length === 90), 'doll-face-ascii.txt should have deterministic 90-column rows');
 assert(asciiText.some((line) => line.includes('@')), 'doll-face-ascii.txt should contain visible glyphs');
 
+const statementGifPath = assertFile('sun-runner-statement.gif');
+const statementGifMetadata = await sharp(statementGifPath, { animated: true }).metadata();
+assert(statementGifMetadata.format === 'gif', `sun-runner-statement.gif should be a GIF, received ${statementGifMetadata.format}`);
+assert(statementGifMetadata.width === 497, `sun-runner-statement.gif width should be 497, received ${statementGifMetadata.width}`);
+assert(statementGifMetadata.pageHeight === 420, `sun-runner-statement.gif frame height should be 420, received ${statementGifMetadata.pageHeight}`);
+assert(statementGifMetadata.pages === 4, `sun-runner-statement.gif should contain 4 frames, received ${statementGifMetadata.pages}`);
+assert(
+  JSON.stringify(statementGifMetadata.delay) === JSON.stringify([900, 700, 700, 900]),
+  `sun-runner-statement.gif frame delays changed: ${JSON.stringify(statementGifMetadata.delay)}`,
+);
+assert(statementGifMetadata.loop === 0, `sun-runner-statement.gif should loop forever, received loop=${statementGifMetadata.loop}`);
+
 const gifPath = assertFile('doll-face-conversion-stages.gif');
 const gifMetadata = await sharp(gifPath, { animated: true }).metadata();
 assert(gifMetadata.format === 'gif', `doll-face-conversion-stages.gif should be a GIF, received ${gifMetadata.format}`);
@@ -60,4 +72,4 @@ assert(
 );
 assert(gifMetadata.loop === 0, `doll-face-conversion-stages.gif should loop forever, received loop=${gifMetadata.loop}`);
 
-console.log(`Verified ${pngAssets.length + 3} generated README assets, including doll-face-conversion-stages.gif.`);
+console.log(`Verified ${pngAssets.length + 4} generated README assets, including sun-runner-statement.gif and doll-face-conversion-stages.gif.`);

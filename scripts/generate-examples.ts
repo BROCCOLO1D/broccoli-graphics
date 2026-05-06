@@ -9,6 +9,7 @@ import {
   floydSteinbergKernel,
   imageToAscii,
   orderedDither,
+  quantizeToPalette,
   renderAsciiSvg,
   renderAsciiText,
   type PixelBuffer,
@@ -20,6 +21,7 @@ const outputDir = join(process.cwd(), 'examples', 'output');
 const dollFaceInputPath = join(process.cwd(), 'examples', 'input', 'doll-face.jpg');
 const sunRunnerInputPath = join(process.cwd(), 'examples', 'input', 'sun-runner.jpg');
 const previewWidth = 360;
+const statementWidth = 497;
 const asciiSourceWidth = 180;
 const asciiCellWidth = 2;
 const asciiCellHeight = 3;
@@ -128,6 +130,104 @@ const generateDitherAssets = async (inputPath: string, prefix: string, preview: 
   );
 };
 
+
+const rgbImageToRgba = (image: PixelBuffer<Uint8Array>): Uint8Array => {
+  const pixelCount = image.width * image.height;
+  const rgba = new Uint8Array(pixelCount * 4);
+  for (let index = 0; index < pixelCount; index++) {
+    const sourceOffset = index * image.channels;
+    const targetOffset = index * 4;
+    const r = image.data[sourceOffset] ?? 0;
+    rgba[targetOffset] = r;
+    rgba[targetOffset + 1] = image.channels === 1 ? r : (image.data[sourceOffset + 1] ?? 0);
+    rgba[targetOffset + 2] = image.channels === 1 ? r : (image.data[sourceOffset + 2] ?? 0);
+    rgba[targetOffset + 3] = 255;
+  }
+  return rgba;
+};
+
+const colorizedDitherFrame = (source: RawRgbImage, dithered: PixelBuffer<Uint8Array>): Uint8Array => {
+  const pixelCount = source.width * source.height;
+  const rgba = new Uint8Array(pixelCount * 4);
+  for (let index = 0; index < pixelCount; index++) {
+    const sourceOffset = index * source.channels;
+    const targetOffset = index * 4;
+    const ink = dithered.data[index] ?? 0;
+    const r = source.data[sourceOffset] ?? 0;
+    const g = source.data[sourceOffset + 1] ?? 0;
+    const b = source.data[sourceOffset + 2] ?? 0;
+    if (ink > 127) {
+      rgba[targetOffset] = r;
+      rgba[targetOffset + 1] = g;
+      rgba[targetOffset + 2] = b;
+    } else {
+      rgba[targetOffset] = Math.round(r * 0.22 + 9);
+      rgba[targetOffset + 1] = Math.round(g * 0.22 + 15);
+      rgba[targetOffset + 2] = Math.round(b * 0.22 + 22);
+    }
+    rgba[targetOffset + 3] = 255;
+  }
+  return rgba;
+};
+
+const writeGif = (name: string, width: number, height: number, frames: ReadonlyArray<{ readonly rgba: Uint8Array; readonly delayMs: number }>): void => {
+  const gif = GIFEncoder({ initialCapacity: width * height * frames.length });
+  for (const [index, frame] of frames.entries()) {
+    const palette = quantize(frame.rgba, 128, { format: 'rgb565' });
+    gif.writeFrame(applyPalette(frame.rgba, palette, 'rgb565'), width, height, {
+      palette,
+      delay: frame.delayMs,
+      repeat: index === 0 ? 0 : undefined,
+      dispose: 2,
+    });
+  }
+  gif.finish();
+  writeFileSync(join(outputDir, name), gif.bytes());
+};
+
+const sampledPalette = (image: RawRgbImage, columns = 8, rows = 8): ReadonlyArray<readonly [number, number, number]> => {
+  const colors: Array<readonly [number, number, number]> = [
+    [14, 220, 220],
+    [255, 215, 22],
+    [255, 255, 255],
+    [24, 24, 24],
+    [48, 154, 74],
+    [120, 120, 120],
+    [230, 230, 230],
+    [12, 92, 112],
+  ];
+
+  for (let y = 0; y < rows; y++) {
+    const sourceY = Math.min(image.height - 1, Math.round((y / Math.max(1, rows - 1)) * (image.height - 1)));
+    for (let x = 0; x < columns; x++) {
+      const sourceX = Math.min(image.width - 1, Math.round((x / Math.max(1, columns - 1)) * (image.width - 1)));
+      const offset = (sourceY * image.width + sourceX) * image.channels;
+      colors.push([image.data[offset] ?? 0, image.data[offset + 1] ?? 0, image.data[offset + 2] ?? 0]);
+    }
+  }
+
+  return colors;
+};
+
+const generateSunRunnerStatementGif = async (): Promise<void> => {
+  const source = await loadRgbPreview(sunRunnerInputPath, statementWidth);
+  const paletteFrame = quantizeToPalette({
+    image: source,
+    outputChannels: 3,
+    palette: sampledPalette(source),
+  });
+  const ordered = orderedDither({ image: source, matrix: createBayerMatrix(8), levels: 2 });
+  const floyd = errorDiffuse({ image: source, kernel: floydSteinbergKernel, levels: 2, serpentine: true });
+  const atkinson = errorDiffuse({ image: source, kernel: atkinsonKernel, levels: 2, serpentine: true });
+
+  writeGif('sun-runner-statement.gif', source.width, source.height, [
+    { rgba: rgbImageToRgba(paletteFrame), delayMs: 900 },
+    { rgba: colorizedDitherFrame(source, ordered), delayMs: 700 },
+    { rgba: colorizedDitherFrame(source, floyd), delayMs: 700 },
+    { rgba: colorizedDitherFrame(source, atkinson), delayMs: 900 },
+  ]);
+};
+
 const hexByte = (value: number): string => value.toString(16).padStart(2, '0');
 
 const averageCellColor = (image: RawRgbImage, cellX: number, cellY: number): string => {
@@ -215,22 +315,12 @@ const loadGifStageRgba = async (stage: GifStage): Promise<Uint8Array> => {
 };
 
 const generateAnimatedGifAsset = async (): Promise<void> => {
-  const gif = GIFEncoder({ initialCapacity: previewWidth * previewWidth * gifStages.length });
   const height = previewWidth * 1.5;
-
-  for (const [index, stage] of gifStages.entries()) {
-    const rgba = await loadGifStageRgba(stage);
-    const palette = quantize(rgba, 128, { format: 'rgb565' });
-    gif.writeFrame(applyPalette(rgba, palette, 'rgb565'), previewWidth, height, {
-      palette,
-      delay: stage.delayMs,
-      repeat: index === 0 ? 0 : undefined,
-      dispose: 2,
-    });
+  const frames = [];
+  for (const stage of gifStages) {
+    frames.push({ rgba: await loadGifStageRgba(stage), delayMs: stage.delayMs });
   }
-
-  gif.finish();
-  writeFileSync(join(outputDir, 'doll-face-conversion-stages.gif'), gif.bytes());
+  writeGif('doll-face-conversion-stages.gif', previewWidth, height, frames);
 };
 
 mkdirSync(outputDir, { recursive: true });
@@ -238,6 +328,7 @@ const dollFacePreview = await loadRgbPreview(dollFaceInputPath, previewWidth);
 const sunRunnerPreview = await loadRgbPreview(sunRunnerInputPath, previewWidth);
 await generateDitherAssets(dollFaceInputPath, 'doll-face', dollFacePreview);
 await generateDitherAssets(sunRunnerInputPath, 'sun-runner', sunRunnerPreview);
+await generateSunRunnerStatementGif();
 await generateAsciiAssets();
 await generateAnimatedGifAsset();
 
