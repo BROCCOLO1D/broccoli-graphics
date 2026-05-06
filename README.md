@@ -81,7 +81,7 @@ The canonical example input is the committed close-up doll/anime-face photo at [
 
 ![Rendered ASCII doll face](examples/output/doll-face-ascii.png)
 
-The plain text backing file is also committed at [`examples/output/doll-face-ascii.txt`](examples/output/doll-face-ascii.txt), but README previews use rendered SVG/PNG assets so typography and spacing are stable across viewers.
+The plain text backing file is also committed at [`examples/output/doll-face-ascii.txt`](examples/output/doll-face-ascii.txt), but README previews use rendered SVG/PNG assets so typography, spacing, and per-cell source colors are stable across viewers.
 
 Generate the full asset set with:
 
@@ -89,7 +89,7 @@ Generate the full asset set with:
 npm run examples
 ```
 
-The script decodes and resizes the JPEG with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders the ASCII canvas through `renderAsciiSvg`, and rasterizes that SVG to a crisp PNG for README embedding.
+The script decodes and resizes the JPEG with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders a colorized ASCII canvas through `renderAsciiSvg`, and rasterizes that SVG to a crisp PNG for README embedding.
 
 Core usage mirrors the generation pipeline:
 
@@ -112,7 +112,10 @@ const { data, info } = await sharp('examples/input/doll-face.jpg')
 const image = { width: info.width, height: info.height, channels: 3 as const, data: new Uint8Array(data) };
 const dithered = orderedDither({ image, matrix: createBayerMatrix(8), levels: 2 });
 const ascii = imageToAscii({ image: dithered, ramp: DENSE_RAMP, cellWidth: 2, cellHeight: 4 });
-const svg = renderAsciiSvg(ascii, { background: '#ffffff', foreground: '#111827' });
+const svg = renderAsciiSvg(ascii, {
+  background: '#fffaf7',
+  foreground: ({ cell, x }) => (cell === ' ' ? undefined : (x < ascii.width / 2 ? '#2d1f1f' : '#b87868')),
+});
 ```
 
 GIF/video generation is intentionally not part of the core package yet to avoid adding runtime dependencies. The frame helpers produce iterable frame/text sequences that can later be piped into optional GIF, SVG, Canvas, or terminal adapters.
@@ -193,7 +196,7 @@ const colored = renderAsciiAnsi(canvas, {
 });
 ```
 
-`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. `renderAsciiText` emits plain strings, `renderAsciiAnsi` adds optional ANSI truecolor foreground/background escapes from fixed colors or per-cell callbacks, and `renderAsciiSvg` creates dependency-free standalone SVG previews for docs or browser rendering.
+`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. `renderAsciiText` emits plain strings, `renderAsciiAnsi` adds optional ANSI truecolor foreground/background escapes from fixed colors or per-cell callbacks, and `renderAsciiSvg` creates dependency-free standalone SVG previews with fixed or per-cell foreground colors for docs or browser rendering.
 
 ### Animation helpers
 

@@ -28,6 +28,21 @@ describe('renderAsciiSvg', () => {
     expect(svg).not.toContain('undefined');
   });
 
+  it('supports per-cell foreground colors for image-backed ASCII previews', () => {
+    const svg = renderAsciiSvg(canvas, {
+      cellWidth: 8,
+      cellHeight: 12,
+      fontSize: 10,
+      padding: 2,
+      foreground: ({ cell, x, y, index }) => (cell === ' ' ? undefined : `rgb(${index}, ${x}, ${y})`),
+    });
+
+    expect(svg).toContain('<text x="2" y="12" fill="rgb(0, 0, 0)">A</text>');
+    expect(svg).toContain('<text x="10" y="12" fill="rgb(1, 1, 0)">&amp;</text>');
+    expect(svg).toContain('<text x="2" y="24" fill="rgb(2, 0, 1)">&lt;</text>');
+    expect(svg).not.toContain('rgb(3, 1, 1)');
+  });
+
   it('validates canvas geometry and positive metrics', () => {
     expect(() => renderAsciiSvg({ width: 1, height: 2, cells: ['x'] })).toThrow(/cells length/);
     expect(() => renderAsciiSvg(canvas, { cellWidth: 0 })).toThrow(/cellWidth/);

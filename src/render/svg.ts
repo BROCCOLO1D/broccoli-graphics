@@ -1,6 +1,15 @@
 import { assertPositiveInteger } from '../types.js';
 import type { AsciiCanvas } from '../ascii/convert.js';
 
+export interface AsciiSvgCellContext {
+  readonly cell: string;
+  readonly x: number;
+  readonly y: number;
+  readonly index: number;
+}
+
+export type SvgPaintResolver = string | ((context: AsciiSvgCellContext) => string | undefined);
+
 export interface RenderAsciiSvgOptions {
   /** Pixel width reserved for each ASCII cell. Defaults to 8. */
   readonly cellWidth?: number;
@@ -10,8 +19,8 @@ export interface RenderAsciiSvgOptions {
   readonly fontSize?: number;
   /** Padding around the rendered text grid in pixels. Defaults to 0. */
   readonly padding?: number;
-  /** SVG/CSS paint for text. Defaults to currentColor. */
-  readonly foreground?: string;
+  /** SVG/CSS paint for text, or a per-cell resolver for colorized ASCII previews. Defaults to currentColor. */
+  readonly foreground?: SvgPaintResolver;
   /** Optional SVG/CSS paint for a full-canvas background rect. */
   readonly background?: string;
   /** Accessible title emitted as the first SVG child when provided. */
@@ -61,7 +70,8 @@ export const renderAsciiSvg = (canvas: AsciiCanvas, options: RenderAsciiSvgOptio
 
   const width = canvas.width * cellWidth + padding * 2;
   const height = canvas.height * cellHeight + padding * 2;
-  const foreground = escapeXml(options.foreground ?? 'currentColor');
+  const staticForeground = typeof options.foreground === 'function' ? undefined : escapeXml(options.foreground ?? 'currentColor');
+  const foregroundResolver = typeof options.foreground === 'function' ? options.foreground : undefined;
   const fontFamily = escapeXml(options.fontFamily ?? 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace');
   const baselineOffset = Math.round((cellHeight + fontSize) / 2) - 1;
   const lines: string[] = [
@@ -76,16 +86,34 @@ export const renderAsciiSvg = (canvas: AsciiCanvas, options: RenderAsciiSvgOptio
   }
 
   lines.push(
-    `  <g font-family="${fontFamily}" font-size="${fontSize}" fill="${foreground}" xml:space="preserve">`,
+    `  <g font-family="${fontFamily}" font-size="${fontSize}"${staticForeground ? ` fill="${staticForeground}"` : ''} xml:space="preserve">`,
   );
 
-  for (let y = 0; y < canvas.height; y++) {
-    let row = '';
-    const rowOffset = y * canvas.width;
-    for (let x = 0; x < canvas.width; x++) {
-      row += canvas.cells[rowOffset + x] ?? ' ';
+  if (foregroundResolver) {
+    for (let y = 0; y < canvas.height; y++) {
+      const rowOffset = y * canvas.width;
+      const baseline = padding + y * cellHeight + baselineOffset;
+      for (let x = 0; x < canvas.width; x++) {
+        const index = rowOffset + x;
+        const cell = canvas.cells[index] ?? ' ';
+        const fill = foregroundResolver({ cell, x, y, index });
+        if (!fill) {
+          continue;
+        }
+        lines.push(
+          `    <text x="${padding + x * cellWidth}" y="${baseline}" fill="${escapeXml(fill)}">${escapeXml(cell)}</text>`,
+        );
+      }
     }
-    lines.push(`    <text x="${padding}" y="${padding + y * cellHeight + baselineOffset}">${escapeXml(row)}</text>`);
+  } else {
+    for (let y = 0; y < canvas.height; y++) {
+      let row = '';
+      const rowOffset = y * canvas.width;
+      for (let x = 0; x < canvas.width; x++) {
+        row += canvas.cells[rowOffset + x] ?? ' ';
+      }
+      lines.push(`    <text x="${padding}" y="${padding + y * cellHeight + baselineOffset}">${escapeXml(row)}</text>`);
+    }
   }
 
   lines.push('  </g>', '</svg>');

@@ -87,7 +87,9 @@ export {
 
 export {
   renderAsciiSvg,
+  type AsciiSvgCellContext,
   type RenderAsciiSvgOptions,
+  type SvgPaintResolver,
 } from './render/svg.js';
 
 export {
