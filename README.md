@@ -89,10 +89,11 @@ The GIF is generated from the same deterministic PNG outputs and labels each sta
 
 The plain text backing file is also committed at [`examples/output/doll-face-ascii.txt`](examples/output/doll-face-ascii.txt), but README previews use rendered SVG/PNG assets so typography, spacing, and per-cell source colors are stable across viewers.
 
-Generate the full asset set with:
+Generate and verify the full asset set with:
 
 ```bash
 npm run examples
+npm run verify:examples
 ```
 
 The script decodes and resizes the JPEG with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders a colorized ASCII canvas through `renderAsciiSvg`, rasterizes that SVG to a crisp PNG, and encodes a labeled conversion-stages GIF with dev-only `gifenc` for README embedding.
