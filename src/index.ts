@@ -43,3 +43,13 @@ export {
   thresholdAt,
   type OrderedDitherOptions,
 } from './dither/ordered.js';
+
+export {
+  atkinsonKernel,
+  errorDiffuse,
+  floydSteinbergKernel,
+  quantizeLevel,
+  type ErrorDiffuseOptions,
+  type ErrorDiffusionKernel,
+  type ErrorDiffusionOffset,
+} from './dither/error-diffusion.js';
