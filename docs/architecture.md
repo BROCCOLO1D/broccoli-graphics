@@ -81,11 +81,12 @@ const ascii = imageToAscii({ image: dithered, ramp: ' .:-=+*#%@' });
 console.log(renderAsciiText(ascii));
 ```
 
-Subpath exports should eventually allow:
+Subpath exports are provided for tree-shakable imports:
 
 ```ts
 import { orderedDither } from 'broccoli-graphics/dither/ordered';
 import { imageToAscii } from 'broccoli-graphics/ascii/convert';
+import { mapFrames } from 'broccoli-graphics/animation/frames';
 ```
 
 ## Module responsibilities

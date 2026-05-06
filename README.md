@@ -113,6 +113,14 @@ GIF/video generation is intentionally not part of the core package yet to avoid 
 
 ## API overview
 
+All public modules are available from the root export and as subpath exports for tree-shakable imports:
+
+```ts
+import { orderedDither } from 'broccoli-graphics/dither/ordered';
+import { imageToAscii } from 'broccoli-graphics/ascii/convert';
+import { renderAsciiText } from 'broccoli-graphics/render/text';
+```
+
 ### Luminance
 
 ```ts
