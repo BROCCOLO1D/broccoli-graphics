@@ -69,7 +69,7 @@ This document records public references and implementation patterns reviewed whi
 
 ## Performance and packaging implications
 
-- Runtime should have no image decoding dependency in core. Consumers can feed browser `ImageData`, canvas buffers, PNG-decoded typed arrays, or synthetic data.
+- Runtime should have no image decoding dependency in core. Consumers can feed browser `ImageData`, canvas buffers, PNG-decoded typed arrays, or generated data.
 - Use typed arrays (`Uint8ClampedArray`, `Uint8Array`, `Float32Array`) and index arithmetic (`base = (y * width + x) * channels`) in hot paths.
 - Keep allocation policy explicit: functions should either return a new buffer or document in-place behavior.
 - Exports should be subpath-friendly and tree-shakable: `dither/ordered`, `dither/error-diffusion`, `ascii/convert`, etc.

@@ -1,22 +1,21 @@
 # broccoli-graphics
 
-High-performance lightweight TypeScript graphics primitives for dithering, ASCII art, and simple animation pipelines.
+Small, dependency-free TypeScript graphics primitives for typed-array pixel buffers.
 
-`broccoli-graphics` is designed for projects that already have image-like pixel buffers and want small, composable transforms instead of a heavyweight image-processing runtime. Core functions accept typed arrays such as `Uint8Array`, `Uint8ClampedArray`, or browser `ImageData.data` and return plain buffers/objects that are easy to test and render anywhere.
+Use it for dithering, palette quantization, ASCII conversion/rendering, and lightweight frame pipelines. The core works with `Uint8Array`, `Uint8ClampedArray`, and browser `ImageData.data`.
 
 ## Status
 
-Early `0.0.0` package scaffold. The core APIs are implemented and tested, but the public surface may still change before an initial npm release.
+Early `0.0.0` package. APIs are implemented and tested, but may change before the first npm release.
 
 ## Features
 
-- BT.709 luminance and grayscale conversion for 1/3/4-channel pixel buffers, with encoded-byte and linear-light transfer modes.
-- Palette utilities with clamped RGB/RGBA normalization, deterministic nearest-color matching, and image quantization.
-- Ordered dithering with generated power-of-two Bayer matrices.
-- Error diffusion dithering with data-driven Floyd-Steinberg, Atkinson, JJN, Stucki, and Sierra-family kernels.
-- ASCII conversion with configurable character ramps, cell averaging, and invert support.
-- Plain text, ANSI, and standalone SVG rendering for ASCII canvases.
-- Lazy frame helpers for mapping, looping, timing, and sampling animation pipelines.
+- BT.709 grayscale and luminance helpers.
+- Ordered and error-diffusion dithering.
+- Palette normalization, nearest-color matching, and quantization.
+- ASCII conversion plus plain text, ANSI, and SVG renderers.
+- Lazy frame helpers for simple animation pipelines.
+- Tree-shakable ESM/CJS exports.
 - No runtime dependencies.
 
 ## Install
@@ -25,7 +24,7 @@ Early `0.0.0` package scaffold. The core APIs are implemented and tested, but th
 npm install broccoli-graphics
 ```
 
-For local development in this repository:
+For local development:
 
 ```bash
 npm install
@@ -229,22 +228,21 @@ Frame helpers operate on iterables and are lazy where possible. They are intenti
 
 ## Design notes
 
-- **Typed-array first:** hot paths use linear buffers and index arithmetic to avoid per-pixel object allocation.
-- **Runtime-safe raw buffers:** shared validation rejects unsupported channel counts, non-integer dimensions/strides, short buffers, and undersized outputs before hot loops run.
-- **Pure transforms:** functions accept explicit inputs and return new buffers/objects unless an output buffer is supplied.
-- **Small modules:** algorithms are split across luminance, palette, dithering, ASCII, rendering, and animation helpers.
-- **Dependency-light core:** image decoding, terminal control, GIF encoding, and Canvas integration are left to consumers or optional future adapters.
-- **License-safe implementation:** public research is summarized in [`docs/research.md`](docs/research.md); implementation code is original and does not copy source from reviewed projects.
+- Typed-array first: APIs accept raw pixel buffers and avoid per-pixel objects in hot paths.
+- Pure transforms: functions return new buffers/objects unless an output buffer is supplied.
+- Small modules: luminance, palette, dithering, ASCII, rendering, and animation helpers are separately importable.
+- Dependency-free core: image decoding, GIF/video encoding, Canvas, and terminal orchestration stay outside runtime dependencies.
+- License-safe implementation: research notes are summarized in [`docs/research.md`](docs/research.md); implementation code is original.
 
 See [`docs/architecture.md`](docs/architecture.md) for module boundaries and extension points.
 
-## Performance notes
+## Performance
 
-- Ordered dithering is `O(width * height)` time and writes one byte per output pixel for grayscale output.
-- Error diffusion is `O(width * height * kernelSize)` and currently uses a full `Float32Array` working buffer for clarity and deterministic tests. Serpentine scanning keeps the same complexity while improving directional artifact behavior; a rolling row-buffer implementation can reduce memory later.
-- ASCII conversion averages source pixels per output cell. Larger `cellWidth`/`cellHeight` reduce output size but still read each source pixel once.
-- Palette quantization is `O(width * height * paletteSize)`. The default squared RGB matcher avoids per-pixel object allocation in the hot path, and `quantizeToPaletteIndices` writes one byte per pixel for compact indexed intermediates.
-- Supplying reusable `output` buffers to dither and palette functions avoids repeated allocations in animation loops.
+- Ordered dithering: `O(width * height)`.
+- Error diffusion: `O(width * height * kernelSize)` with a `Float32Array` working buffer.
+- ASCII conversion: reads each source pixel once while averaging output cells.
+- Palette quantization: `O(width * height * paletteSize)`.
+- Reusing `output` buffers avoids repeated allocations in loops.
 
 ## Development
 

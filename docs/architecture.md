@@ -1,6 +1,6 @@
 # Architecture
 
-`broccoli-graphics` is intended to be a lightweight TypeScript graphics toolkit for image-like pixel buffers, dithering, ASCII rendering, and simple frame pipelines. The core design goal is composability: each module should do one transformation well and avoid framework-specific assumptions.
+`broccoli-graphics` is a lightweight TypeScript graphics toolkit for image-like pixel buffers, dithering, ASCII rendering, and simple frame pipelines. The core design goal is composability: each module does one transformation well and avoids framework-specific assumptions.
 
 ## Design principles
 
@@ -10,7 +10,7 @@
 4. **Data-driven algorithms**: dithering kernels, palettes, ramps, and frame transforms should be values that users can define and compose.
 5. **Tree-shakable public API**: modules should be independently importable and re-exported from `src/index.ts` for convenience.
 
-## Target module layout
+## Module layout
 
 ```text
 src/
@@ -27,14 +27,11 @@ src/
     frames.ts               Frame sequence transforms and timing helpers
   render/
     text.ts                 Plain text and ANSI rendering from ASCII cells
+    svg.ts                  Standalone SVG rendering from ASCII cells
   index.ts                  Public exports
 ```
 
-This structure is a starting point; modules can split further if implementation complexity grows.
-
 ## Core types
-
-Expected foundational types:
 
 ```ts
 export interface Size {
@@ -60,7 +57,7 @@ export interface RgbaColor {
 }
 ```
 
-Implementation can add stricter variants as needed. The important constraint is that callers should be able to pass browser `ImageData.data` without conversion.
+The important constraint is that callers can pass browser `ImageData.data` without conversion.
 
 ## Public API sketch
 
@@ -117,14 +114,14 @@ import { mapFrames } from 'broccoli-graphics/animation/frames';
 
 - Define named kernels and a generic diffusion engine.
 - Include common kernels as plain data: Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite.
-- Support grayscale thresholding first, then palette diffusion.
+- Support grayscale thresholding with deterministic edge behavior.
 - Keep edge behavior deterministic and tested.
 
 ### `ascii`
 
 - Store default ramps and ramp validation in `charset`.
 - Convert luminance/image buffers to a `AsciiCanvas` / cell grid.
-- Keep rendering separate so future HTML, SVG, ANSI, and plain text renderers can share conversion output.
+- Keep rendering separate so SVG, ANSI, and plain text renderers can share conversion output.
 
 ### `animation/frames`
 
@@ -154,10 +151,9 @@ import { mapFrames } from 'broccoli-graphics/animation/frames';
 - Custom ASCII ramps and renderer functions.
 - Optional adapters for decoding images or writing animated outputs, kept outside core dependencies.
 
-## Initial implementation sequence
+## Public-release checklist
 
-1. Add shared types, luminance helpers, palette utilities, and ordered dithering.
-2. Add the generic error diffusion engine with Floyd-Steinberg.
-3. Add ASCII ramp mapping, conversion, and text rendering.
-4. Add frame helpers and examples that generate text/SVG/ANSI output from synthetic data.
-5. Polish package exports, README examples, and performance notes.
+- Keep runtime dependencies at zero.
+- Keep package exports aligned with `src/package-exports.test.ts` and `scripts/verify-package-exports.mjs`.
+- Regenerate README assets with `npm run examples` after changing algorithms or renderers.
+- Run `npm test`, `npm run lint`, `npm run build`, `npm run verify:exports`, and `npm run verify:examples` before publishing.
