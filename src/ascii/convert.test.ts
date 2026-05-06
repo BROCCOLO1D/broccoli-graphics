@@ -45,4 +45,38 @@ describe('imageToAscii', () => {
 
     expect(ascii).toEqual({ width: 2, height: 1, cells: ['.', '#'] });
   });
+
+  it('applies brightness, contrast, and gamma tone mapping before ramp lookup', () => {
+    expect(
+      imageToAscii({
+        image: { width: 1, height: 1, channels: 1, data: new Uint8Array([0]) },
+        ramp: ' .#',
+        brightness: 255,
+      }).cells,
+    ).toEqual([' ']);
+
+    expect(
+      imageToAscii({
+        image: { width: 2, height: 1, channels: 1, data: new Uint8Array([0, 255]) },
+        ramp: ' .#',
+        contrast: 0,
+      }).cells,
+    ).toEqual(['.', '.']);
+
+    expect(
+      imageToAscii({
+        image: { width: 1, height: 1, channels: 1, data: new Uint8Array([100]) },
+        ramp: ' .#',
+        gamma: 2,
+      }).cells,
+    ).toEqual(['#']);
+  });
+
+  it('validates tone mapping options', () => {
+    const image = { width: 1, height: 1, channels: 1 as const, data: new Uint8Array([128]) };
+
+    expect(() => imageToAscii({ image, gamma: 0 })).toThrow(/gamma/);
+    expect(() => imageToAscii({ image, contrast: Number.NaN })).toThrow(/contrast/);
+    expect(() => imageToAscii({ image, brightness: Number.POSITIVE_INFINITY })).toThrow(/brightness/);
+  });
 });

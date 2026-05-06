@@ -188,7 +188,14 @@ The default distance is squared RGB distance and ties resolve to the first palet
 ```ts
 import { DENSE_RAMP, imageToAscii, renderAsciiAnsi, renderAsciiSvg, renderAsciiText } from 'broccoli-graphics';
 
-const canvas = imageToAscii({ image, ramp: DENSE_RAMP, cellWidth: 2, cellHeight: 2 });
+const canvas = imageToAscii({
+  image,
+  ramp: DENSE_RAMP,
+  cellWidth: 2,
+  cellHeight: 2,
+  contrast: 1.15,
+  gamma: 1.1,
+});
 const text = renderAsciiText(canvas, { repeatX: 2 });
 const svg = renderAsciiSvg(canvas, { background: '#0b1020', foreground: '#d7ffe3' });
 const colored = renderAsciiAnsi(canvas, {
@@ -196,7 +203,7 @@ const colored = renderAsciiAnsi(canvas, {
 });
 ```
 
-`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. `renderAsciiText` emits plain strings, `renderAsciiAnsi` adds optional ANSI truecolor foreground/background escapes from fixed colors or per-cell callbacks, and `renderAsciiSvg` creates dependency-free standalone SVG previews with fixed or per-cell foreground colors for docs or browser rendering.
+`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. It averages rectangular source cells, then applies optional brightness, contrast, and gamma tone mapping before character-ramp lookup. `renderAsciiText` emits plain strings, `renderAsciiAnsi` adds optional ANSI truecolor foreground/background escapes from fixed colors or per-cell callbacks, and `renderAsciiSvg` creates dependency-free standalone SVG previews with fixed or per-cell foreground colors for docs or browser rendering.
 
 ### Animation helpers
 
