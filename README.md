@@ -2,7 +2,9 @@
 
 Small, dependency-free TypeScript graphics primitives for typed-array pixel buffers.
 
-![Animated GIF converted with broccoli-graphics](examples/output/sun-runner-statement.gif)
+<p align="center">
+  <img src="examples/output/sun-runner-statement.gif" width="720" alt="Animated GIF converted with broccoli-graphics">
+</p>
 
 Dither, quantize, convert to ASCII, render SVG/text, and build lightweight frame pipelines from raw buffers. The core works with `Uint8Array`, `Uint8ClampedArray`, and browser `ImageData.data`.
 

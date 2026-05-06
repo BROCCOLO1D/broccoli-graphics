@@ -22,6 +22,7 @@ const dollFaceInputPath = join(process.cwd(), 'examples', 'input', 'doll-face.jp
 const sunRunnerInputPath = join(process.cwd(), 'examples', 'input', 'sun-runner.jpg');
 const statementGifInputPath = join(process.cwd(), 'examples', 'input', 'statement-source.gif');
 const previewWidth = 360;
+const statementWidth = 640;
 const asciiSourceWidth = 180;
 const asciiCellWidth = 2;
 const asciiCellHeight = 3;
@@ -111,8 +112,11 @@ const loadAsciiColorSource = async (): Promise<RawRgbImage> => {
 const loadAnimatedRgbSource = async (inputPath: string): Promise<AnimatedRgbSource> => {
   const metadata = await sharp(inputPath, { animated: true }).metadata();
   const { data, info } = await sharp(inputPath, { animated: true })
+    .resize({ width: statementWidth, kernel: sharp.kernel.nearest })
     .removeAlpha()
-    .modulate({ saturation: 1.08, brightness: 1.04 })
+    .modulate({ saturation: 1.32, brightness: 1.14 })
+    .linear(1.08, 8)
+    .sharpen({ sigma: 0.6, m1: 0.4, m2: 0.8 })
     .raw()
     .toBuffer({ resolveWithObject: true });
 
@@ -169,6 +173,8 @@ const generateDitherAssets = async (inputPath: string, prefix: string, preview: 
 };
 
 
+const clampByte = (value: number): number => Math.max(0, Math.min(255, Math.round(value)));
+
 const colorizedDitherFrame = (source: RawRgbImage, dithered: PixelBuffer<Uint8Array>): Uint8Array => {
   const pixelCount = source.width * source.height;
   const rgba = new Uint8Array(pixelCount * 4);
@@ -179,14 +185,18 @@ const colorizedDitherFrame = (source: RawRgbImage, dithered: PixelBuffer<Uint8Ar
     const r = source.data[sourceOffset] ?? 0;
     const g = source.data[sourceOffset + 1] ?? 0;
     const b = source.data[sourceOffset + 2] ?? 0;
-    if (ink > 127) {
-      rgba[targetOffset] = r;
-      rgba[targetOffset + 1] = g;
-      rgba[targetOffset + 2] = b;
+    if (ink > 200) {
+      rgba[targetOffset] = clampByte(r * 1.18 + 18);
+      rgba[targetOffset + 1] = clampByte(g * 1.16 + 16);
+      rgba[targetOffset + 2] = clampByte(b * 1.14 + 14);
+    } else if (ink > 80) {
+      rgba[targetOffset] = clampByte(r * 0.9 + 18);
+      rgba[targetOffset + 1] = clampByte(g * 0.9 + 20);
+      rgba[targetOffset + 2] = clampByte(b * 0.98 + 28);
     } else {
-      rgba[targetOffset] = Math.round(r * 0.22 + 9);
-      rgba[targetOffset + 1] = Math.round(g * 0.22 + 15);
-      rgba[targetOffset + 2] = Math.round(b * 0.22 + 22);
+      rgba[targetOffset] = clampByte(r * 0.5 + 16);
+      rgba[targetOffset + 1] = clampByte(g * 0.5 + 20);
+      rgba[targetOffset + 2] = clampByte(b * 0.62 + 34);
     }
     rgba[targetOffset + 3] = 255;
   }
@@ -210,14 +220,14 @@ const writeGif = (name: string, width: number, height: number, frames: ReadonlyA
 
 const sampledPalette = (image: RawRgbImage, columns = 8, rows = 8): ReadonlyArray<readonly [number, number, number]> => {
   const colors: Array<readonly [number, number, number]> = [
-    [14, 220, 220],
-    [255, 215, 22],
+    [10, 14, 24],
+    [25, 32, 54],
+    [46, 65, 110],
+    [112, 124, 150],
+    [205, 214, 225],
     [255, 255, 255],
-    [24, 24, 24],
-    [48, 154, 74],
-    [120, 120, 120],
-    [230, 230, 230],
-    [12, 92, 112],
+    [255, 224, 172],
+    [190, 42, 66],
   ];
 
   for (let y = 0; y < rows; y++) {
@@ -241,7 +251,7 @@ const generateStatementGif = async (): Promise<void> => {
       palette: sampledPalette(source, 6, 4),
     });
     const paletteFrame: RawRgbImage = { ...quantized, channels: 3 };
-    const dithered = errorDiffuse({ image: paletteFrame, kernel: floydSteinbergKernel, levels: 2, serpentine: true });
+    const dithered = errorDiffuse({ image: paletteFrame, kernel: floydSteinbergKernel, levels: 3, serpentine: true });
     return {
       rgba: colorizedDitherFrame(paletteFrame, dithered),
       delayMs: animation.delays[index] ?? 160,

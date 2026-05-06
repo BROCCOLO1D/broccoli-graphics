@@ -51,8 +51,8 @@ assert(asciiText.some((line) => line.includes('@')), 'doll-face-ascii.txt should
 const statementGifPath = assertFile('sun-runner-statement.gif');
 const statementGifMetadata = await sharp(statementGifPath, { animated: true }).metadata();
 assert(statementGifMetadata.format === 'gif', `sun-runner-statement.gif should be a GIF, received ${statementGifMetadata.format}`);
-assert(statementGifMetadata.width === 360, `sun-runner-statement.gif width should be 360, received ${statementGifMetadata.width}`);
-assert(statementGifMetadata.pageHeight === 225, `sun-runner-statement.gif frame height should be 225, received ${statementGifMetadata.pageHeight}`);
+assert(statementGifMetadata.width === 640, `sun-runner-statement.gif width should be 640, received ${statementGifMetadata.width}`);
+assert(statementGifMetadata.pageHeight === 400, `sun-runner-statement.gif frame height should be 400, received ${statementGifMetadata.pageHeight}`);
 assert(statementGifMetadata.pages === 17, `sun-runner-statement.gif should contain 17 frames, received ${statementGifMetadata.pages}`);
 assert(
   JSON.stringify(statementGifMetadata.delay) === JSON.stringify([
