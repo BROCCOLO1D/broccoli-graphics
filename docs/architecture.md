@@ -115,7 +115,7 @@ import { mapFrames } from 'broccoli-graphics/animation/frames';
 ### `dither/error-diffusion`
 
 - Define named kernels and a generic diffusion engine.
-- Start with Floyd-Steinberg as the first required algorithm.
+- Include common kernels as plain data: Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite.
 - Support grayscale thresholding first, then palette diffusion.
 - Keep edge behavior deterministic and tested.
 

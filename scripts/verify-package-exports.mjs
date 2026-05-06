@@ -7,7 +7,7 @@ const esmChecks = [
   ['broccoli-graphics/luminance', 'toGrayscale'],
   ['broccoli-graphics/palette', 'nearestColor'],
   ['broccoli-graphics/dither/ordered', 'createBayerMatrix'],
-  ['broccoli-graphics/dither/error-diffusion', 'errorDiffuse'],
+  ['broccoli-graphics/dither/error-diffusion', 'sierraKernel'],
   ['broccoli-graphics/ascii/charset', 'SIMPLE_RAMP'],
   ['broccoli-graphics/ascii/convert', 'imageToAscii'],
   ['broccoli-graphics/render/text', 'renderAsciiText'],

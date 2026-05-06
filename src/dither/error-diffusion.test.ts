@@ -3,7 +3,12 @@ import {
   atkinsonKernel,
   errorDiffuse,
   floydSteinbergKernel,
+  jarvisJudiceNinkeKernel,
   quantizeLevel,
+  sierraKernel,
+  sierraLiteKernel,
+  stuckiKernel,
+  twoRowSierraKernel,
 } from './error-diffusion.js';
 
 describe('error diffusion kernels', () => {
@@ -22,6 +27,37 @@ describe('error diffusion kernels', () => {
   it('defines Atkinson with six one-eighth neighbors', () => {
     expect(atkinsonKernel.offsets).toHaveLength(6);
     expect(atkinsonKernel.offsets.every((offset) => offset.weight === 1 / 8)).toBe(true);
+  });
+
+  it('defines wider diffusion kernels with normalized forward weights', () => {
+    expect(jarvisJudiceNinkeKernel).toEqual({
+      name: 'jarvis-judice-ninke',
+      offsets: [
+        { dx: 1, dy: 0, weight: 7 / 48 },
+        { dx: 2, dy: 0, weight: 5 / 48 },
+        { dx: -2, dy: 1, weight: 3 / 48 },
+        { dx: -1, dy: 1, weight: 5 / 48 },
+        { dx: 0, dy: 1, weight: 7 / 48 },
+        { dx: 1, dy: 1, weight: 5 / 48 },
+        { dx: 2, dy: 1, weight: 3 / 48 },
+        { dx: -2, dy: 2, weight: 1 / 48 },
+        { dx: -1, dy: 2, weight: 3 / 48 },
+        { dx: 0, dy: 2, weight: 5 / 48 },
+        { dx: 1, dy: 2, weight: 3 / 48 },
+        { dx: 2, dy: 2, weight: 1 / 48 },
+      ],
+    });
+
+    expect(stuckiKernel.offsets).toHaveLength(12);
+    expect(sierraKernel.offsets).toHaveLength(10);
+    expect(twoRowSierraKernel.offsets).toHaveLength(7);
+    expect(sierraLiteKernel.offsets).toHaveLength(3);
+
+    for (const kernel of [stuckiKernel, sierraKernel, twoRowSierraKernel, sierraLiteKernel]) {
+      const totalWeight = kernel.offsets.reduce((sum, offset) => sum + offset.weight, 0);
+      expect(totalWeight).toBeCloseTo(1);
+      expect(kernel.offsets.every((offset) => offset.dy > 0 || offset.dx > 0)).toBe(true);
+    }
   });
 });
 

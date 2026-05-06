@@ -13,7 +13,7 @@ Early `0.0.0` package scaffold. The core APIs are implemented and tested, but th
 - BT.709 luminance and grayscale conversion for 1/3/4-channel pixel buffers.
 - Palette utilities with clamped RGB/RGBA normalization and deterministic nearest-color matching.
 - Ordered dithering with generated power-of-two Bayer matrices.
-- Error diffusion dithering with data-driven Floyd-Steinberg and Atkinson kernels.
+- Error diffusion dithering with data-driven Floyd-Steinberg, Atkinson, JJN, Stucki, and Sierra-family kernels.
 - ASCII conversion with configurable character ramps, cell averaging, and invert support.
 - Plain text rendering for ASCII canvases.
 - Lazy frame helpers for mapping, looping, timing, and sampling animation pipelines.
@@ -146,13 +146,21 @@ Bayer matrix sizes must be powers of two. Ordered dithering is stateless per pix
 ### Error diffusion
 
 ```ts
-import { atkinsonKernel, errorDiffuse, floydSteinbergKernel } from 'broccoli-graphics';
+import {
+  atkinsonKernel,
+  errorDiffuse,
+  floydSteinbergKernel,
+  jarvisJudiceNinkeKernel,
+  sierraKernel,
+  stuckiKernel,
+} from 'broccoli-graphics';
 
 const fs = errorDiffuse({ image, kernel: floydSteinbergKernel, levels: 2 });
 const atkinson = errorDiffuse({ image, kernel: atkinsonKernel, levels: 2 });
+const smoother = errorDiffuse({ image, kernel: sierraKernel, levels: 2 });
 ```
 
-Kernels are plain data (`dx`, `dy`, `weight`) so additional diffusion algorithms can be added without changing the scanline engine.
+Built-in kernels cover Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite. Kernels are plain data (`dx`, `dy`, `weight`) so additional diffusion algorithms can be added without changing the scanline engine.
 
 ### Palette utilities
 

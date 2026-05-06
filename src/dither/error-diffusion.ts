@@ -34,6 +34,80 @@ export const atkinsonKernel: ErrorDiffusionKernel = Object.freeze({
   ]),
 });
 
+export const jarvisJudiceNinkeKernel: ErrorDiffusionKernel = Object.freeze({
+  name: 'jarvis-judice-ninke',
+  offsets: Object.freeze([
+    Object.freeze({ dx: 1, dy: 0, weight: 7 / 48 }),
+    Object.freeze({ dx: 2, dy: 0, weight: 5 / 48 }),
+    Object.freeze({ dx: -2, dy: 1, weight: 3 / 48 }),
+    Object.freeze({ dx: -1, dy: 1, weight: 5 / 48 }),
+    Object.freeze({ dx: 0, dy: 1, weight: 7 / 48 }),
+    Object.freeze({ dx: 1, dy: 1, weight: 5 / 48 }),
+    Object.freeze({ dx: 2, dy: 1, weight: 3 / 48 }),
+    Object.freeze({ dx: -2, dy: 2, weight: 1 / 48 }),
+    Object.freeze({ dx: -1, dy: 2, weight: 3 / 48 }),
+    Object.freeze({ dx: 0, dy: 2, weight: 5 / 48 }),
+    Object.freeze({ dx: 1, dy: 2, weight: 3 / 48 }),
+    Object.freeze({ dx: 2, dy: 2, weight: 1 / 48 }),
+  ]),
+});
+
+export const stuckiKernel: ErrorDiffusionKernel = Object.freeze({
+  name: 'stucki',
+  offsets: Object.freeze([
+    Object.freeze({ dx: 1, dy: 0, weight: 8 / 42 }),
+    Object.freeze({ dx: 2, dy: 0, weight: 4 / 42 }),
+    Object.freeze({ dx: -2, dy: 1, weight: 2 / 42 }),
+    Object.freeze({ dx: -1, dy: 1, weight: 4 / 42 }),
+    Object.freeze({ dx: 0, dy: 1, weight: 8 / 42 }),
+    Object.freeze({ dx: 1, dy: 1, weight: 4 / 42 }),
+    Object.freeze({ dx: 2, dy: 1, weight: 2 / 42 }),
+    Object.freeze({ dx: -2, dy: 2, weight: 1 / 42 }),
+    Object.freeze({ dx: -1, dy: 2, weight: 2 / 42 }),
+    Object.freeze({ dx: 0, dy: 2, weight: 4 / 42 }),
+    Object.freeze({ dx: 1, dy: 2, weight: 2 / 42 }),
+    Object.freeze({ dx: 2, dy: 2, weight: 1 / 42 }),
+  ]),
+});
+
+export const sierraKernel: ErrorDiffusionKernel = Object.freeze({
+  name: 'sierra',
+  offsets: Object.freeze([
+    Object.freeze({ dx: 1, dy: 0, weight: 5 / 32 }),
+    Object.freeze({ dx: 2, dy: 0, weight: 3 / 32 }),
+    Object.freeze({ dx: -2, dy: 1, weight: 2 / 32 }),
+    Object.freeze({ dx: -1, dy: 1, weight: 4 / 32 }),
+    Object.freeze({ dx: 0, dy: 1, weight: 5 / 32 }),
+    Object.freeze({ dx: 1, dy: 1, weight: 4 / 32 }),
+    Object.freeze({ dx: 2, dy: 1, weight: 2 / 32 }),
+    Object.freeze({ dx: -1, dy: 2, weight: 2 / 32 }),
+    Object.freeze({ dx: 0, dy: 2, weight: 3 / 32 }),
+    Object.freeze({ dx: 1, dy: 2, weight: 2 / 32 }),
+  ]),
+});
+
+export const twoRowSierraKernel: ErrorDiffusionKernel = Object.freeze({
+  name: 'two-row-sierra',
+  offsets: Object.freeze([
+    Object.freeze({ dx: 1, dy: 0, weight: 4 / 16 }),
+    Object.freeze({ dx: 2, dy: 0, weight: 3 / 16 }),
+    Object.freeze({ dx: -2, dy: 1, weight: 1 / 16 }),
+    Object.freeze({ dx: -1, dy: 1, weight: 2 / 16 }),
+    Object.freeze({ dx: 0, dy: 1, weight: 3 / 16 }),
+    Object.freeze({ dx: 1, dy: 1, weight: 2 / 16 }),
+    Object.freeze({ dx: 2, dy: 1, weight: 1 / 16 }),
+  ]),
+});
+
+export const sierraLiteKernel: ErrorDiffusionKernel = Object.freeze({
+  name: 'sierra-lite',
+  offsets: Object.freeze([
+    Object.freeze({ dx: 1, dy: 0, weight: 2 / 4 }),
+    Object.freeze({ dx: -1, dy: 1, weight: 1 / 4 }),
+    Object.freeze({ dx: 0, dy: 1, weight: 1 / 4 }),
+  ]),
+});
+
 const clamp255 = (value: number): number => (value <= 0 ? 0 : value >= 255 ? 255 : value);
 
 export const quantizeLevel = (value: number, levels = 2): number => {
