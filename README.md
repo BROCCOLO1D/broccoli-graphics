@@ -15,7 +15,7 @@ Early `0.0.0` package scaffold. The core APIs are implemented and tested, but th
 - Ordered dithering with generated power-of-two Bayer matrices.
 - Error diffusion dithering with data-driven Floyd-Steinberg, Atkinson, JJN, Stucki, and Sierra-family kernels.
 - ASCII conversion with configurable character ramps, cell averaging, and invert support.
-- Plain text rendering for ASCII canvases.
+- Plain text, ANSI, and standalone SVG rendering for ASCII canvases.
 - Lazy frame helpers for mapping, looping, timing, and sampling animation pipelines.
 - No runtime dependencies.
 
@@ -69,44 +69,50 @@ const ascii = imageToAscii({ image: dithered, ramp: ' @' });
 console.log(renderAsciiText(ascii));
 ```
 
-## Example output
+## Generated image examples
 
-The repository includes generated text assets from synthetic image data:
+The canonical example input is the committed close-up doll/anime-face photo at [`examples/input/doll-face.jpg`](examples/input/doll-face.jpg). The README assets below are generated deterministically with the dev-only Sharp pipeline in [`scripts/generate-examples.ts`](scripts/generate-examples.ts); the runtime package remains dependency-free.
 
-- [`examples/output/synthetic-ascii.txt`](examples/output/synthetic-ascii.txt) — one ordered-dithered ASCII frame.
-- [`examples/output/synthetic-animation.txt`](examples/output/synthetic-animation.txt) — six text frames for a simple wave animation.
+| Original | Ordered Bayer | Floyd–Steinberg | Atkinson |
+| --- | --- | --- | --- |
+| ![Original resized doll face](examples/output/doll-face-original.png) | ![Ordered Bayer dithered doll face](examples/output/doll-face-ordered-bayer.png) | ![Floyd–Steinberg dithered doll face](examples/output/doll-face-floyd-steinberg.png) | ![Atkinson dithered doll face](examples/output/doll-face-atkinson.png) |
 
-Generate them with:
+### ASCII SVG/PNG rendering
+
+![Rendered ASCII doll face](examples/output/doll-face-ascii.png)
+
+The plain text backing file is also committed at [`examples/output/doll-face-ascii.txt`](examples/output/doll-face-ascii.txt), but README previews use rendered SVG/PNG assets so typography and spacing are stable across viewers.
+
+Generate the full asset set with:
 
 ```bash
 npm run examples
 ```
 
-Preview the basic one-shot terminal example with:
+The script decodes and resizes the JPEG with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders the ASCII canvas through `renderAsciiSvg`, and rasterizes that SVG to a crisp PNG for README embedding.
 
-```bash
-npx tsx examples/basic.ts
-```
+Core usage mirrors the generation pipeline:
 
-Current still-frame output:
+```ts
+import sharp from 'sharp';
+import {
+  DENSE_RAMP,
+  createBayerMatrix,
+  imageToAscii,
+  orderedDither,
+  renderAsciiSvg,
+} from 'broccoli-graphics';
 
-```text
-  @@  @@  @@   @       @        
-  @@  @@  @@  @       @   @     
-@@  @@ @@@ @@@  @@  @@  @@  @@  
-@@@@@@@@@@@@@@@ @@  @@  @@  @@  
-  @@  @@  @@  @@   @  @@  @@    
-@ @@  @@@ @@  @@  @@  @@  @@    
-@@ @@@ @@@@@@@  @@  @@  @@  @@  
-@@@ @@@ @@@@@@  @@  @@  @@  @@  
-  @@  @@  @@   @       @        
-  @@  @@  @@  @       @   @     
-@@  @@  @@ @@@  @@  @@  @@   @  
-@@@ @@@ @@@@@@  @@  @@  @@  @@  
-  @@  @@  @@  @@   @  @@   @    
-@ @@  @@@ @@  @@  @@  @@  @@    
-@@@@@@@@@@@@@@  @@  @@  @@  @@  
-@@@@@@@@@@@@@@@ @@  @@  @@  @@  
+const { data, info } = await sharp('examples/input/doll-face.jpg')
+  .resize({ width: 360 })
+  .removeAlpha()
+  .raw()
+  .toBuffer({ resolveWithObject: true });
+
+const image = { width: info.width, height: info.height, channels: 3 as const, data: new Uint8Array(data) };
+const dithered = orderedDither({ image, matrix: createBayerMatrix(8), levels: 2 });
+const ascii = imageToAscii({ image: dithered, ramp: DENSE_RAMP, cellWidth: 2, cellHeight: 4 });
+const svg = renderAsciiSvg(ascii, { background: '#ffffff', foreground: '#111827' });
 ```
 
 GIF/video generation is intentionally not part of the core package yet to avoid adding runtime dependencies. The frame helpers produce iterable frame/text sequences that can later be piped into optional GIF, SVG, Canvas, or terminal adapters.
@@ -177,16 +183,17 @@ The default distance is squared RGB distance and ties resolve to the first palet
 ### ASCII conversion and rendering
 
 ```ts
-import { DENSE_RAMP, imageToAscii, renderAsciiAnsi, renderAsciiText } from 'broccoli-graphics';
+import { DENSE_RAMP, imageToAscii, renderAsciiAnsi, renderAsciiSvg, renderAsciiText } from 'broccoli-graphics';
 
 const canvas = imageToAscii({ image, ramp: DENSE_RAMP, cellWidth: 2, cellHeight: 2 });
 const text = renderAsciiText(canvas, { repeatX: 2 });
+const svg = renderAsciiSvg(canvas, { background: '#0b1020', foreground: '#d7ffe3' });
 const colored = renderAsciiAnsi(canvas, {
   foreground: ({ y }) => (y % 2 === 0 ? [120, 255, 120] : [80, 180, 255]),
 });
 ```
 
-`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. `renderAsciiText` emits plain strings, while `renderAsciiAnsi` adds optional ANSI truecolor foreground/background escapes from fixed colors or per-cell callbacks.
+`imageToAscii` returns an intermediate `AsciiCanvas` so renderers can stay independent from conversion. `renderAsciiText` emits plain strings, `renderAsciiAnsi` adds optional ANSI truecolor foreground/background escapes from fixed colors or per-cell callbacks, and `renderAsciiSvg` creates dependency-free standalone SVG previews for docs or browser rendering.
 
 ### Animation helpers
 

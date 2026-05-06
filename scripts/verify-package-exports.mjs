@@ -11,6 +11,7 @@ const esmChecks = [
   ['broccoli-graphics/ascii/charset', 'SIMPLE_RAMP'],
   ['broccoli-graphics/ascii/convert', 'imageToAscii'],
   ['broccoli-graphics/render/text', 'renderAsciiAnsi'],
+  ['broccoli-graphics/render/svg', 'renderAsciiSvg'],
   ['broccoli-graphics/animation/frames', 'mapFrames'],
 ];
 

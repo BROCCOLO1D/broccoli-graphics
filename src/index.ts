@@ -86,6 +86,11 @@ export {
 } from './render/text.js';
 
 export {
+  renderAsciiSvg,
+  type RenderAsciiSvgOptions,
+} from './render/svg.js';
+
+export {
   frameDurations,
   loopFrames,
   mapFrames,
