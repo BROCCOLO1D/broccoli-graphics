@@ -10,7 +10,7 @@ Early `0.0.0` package scaffold. The core APIs are implemented and tested, but th
 
 ## Features
 
-- BT.709 luminance and grayscale conversion for 1/3/4-channel pixel buffers.
+- BT.709 luminance and grayscale conversion for 1/3/4-channel pixel buffers, with encoded-byte and linear-light transfer modes.
 - Palette utilities with clamped RGB/RGBA normalization, deterministic nearest-color matching, and image quantization.
 - Ordered dithering with generated power-of-two Bayer matrices.
 - Error diffusion dithering with data-driven Floyd-Steinberg, Atkinson, JJN, Stucki, and Sierra-family kernels.
@@ -143,10 +143,11 @@ import { renderAsciiText } from 'broccoli-graphics/render/text';
 import { luminance, toGrayscale } from 'broccoli-graphics';
 
 const y = luminance(255, 0, 0); // BT.709 red luma, about 54.2
+const physicalY = luminance(128, 128, 128, { transfer: 'linear' }); // sRGB-linear relative luminance, about 55.0
 const gray = toGrayscale({ width: 1, height: 1, channels: 3, data: new Uint8Array([255, 0, 0]) });
 ```
 
-`toGrayscale` supports 1, 3, and 4-channel buffers and optional alpha compositing against a configurable background.
+`toGrayscale` supports 1, 3, and 4-channel buffers and optional alpha compositing against a configurable background. The default `encoded` transfer preserves legacy byte-domain luma for common image-processing workflows, while `transfer: 'linear'` converts sRGB bytes to linear light before applying coefficients for physically weighted thresholding or analysis.
 
 ### Ordered dithering
 

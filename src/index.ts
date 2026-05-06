@@ -25,6 +25,7 @@ export {
   toGrayscale,
   type LuminanceCoefficients,
   type LuminanceOptions,
+  type LuminanceTransfer,
   type ToGrayscaleOptions,
 } from './luminance.js';
 
