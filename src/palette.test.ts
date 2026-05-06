@@ -4,6 +4,7 @@ import {
   nearestPaletteIndex,
   normalizePalette,
   quantizeToPalette,
+  quantizeToPaletteIndices,
   squaredRgbDistance,
 } from './palette.js';
 
@@ -90,5 +91,37 @@ describe('palette utilities', () => {
     });
 
     expect([...output.data]).toEqual([0, 255, 255]);
+  });
+
+  it('quantizes images to palette indices with stride and reusable output buffers', () => {
+    const outputBuffer = new Uint8Array(4);
+    const indexed = quantizeToPaletteIndices({
+      image: {
+        width: 3,
+        height: 1,
+        channels: 3,
+        stride: 12,
+        data: new Uint8Array([8, 8, 8, 240, 240, 240, 250, 20, 20, 99, 99, 99]),
+      },
+      palette: [
+        [0, 0, 0],
+        [255, 255, 255],
+        [255, 0, 0],
+      ],
+      output: outputBuffer,
+    });
+
+    expect(indexed.data).toBe(outputBuffer);
+    expect([...indexed.data.slice(0, 3)]).toEqual([0, 1, 2]);
+    expect(indexed).toMatchObject({ width: 3, height: 1, channels: 1 });
+  });
+
+  it('rejects palettes too large for one-byte index output', () => {
+    expect(() =>
+      quantizeToPaletteIndices({
+        image: { width: 1, height: 1, channels: 1, data: new Uint8Array([0]) },
+        palette: Array.from({ length: 257 }, () => [0, 0, 0]),
+      }),
+    ).toThrow(/256/);
   });
 });

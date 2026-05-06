@@ -34,9 +34,11 @@ export {
   normalizeColor,
   normalizePalette,
   quantizeToPalette,
+  quantizeToPaletteIndices,
   squaredRgbDistance,
   type ColorDistance,
   type PaletteOutputChannels,
+  type QuantizeToPaletteIndicesOptions,
   type QuantizeToPaletteOptions,
 } from './palette.js';
 

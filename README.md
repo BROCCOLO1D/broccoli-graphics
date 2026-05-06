@@ -181,14 +181,15 @@ Built-in kernels cover Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, S
 ### Palette utilities
 
 ```ts
-import { nearestColor, normalizePalette, quantizeToPalette } from 'broccoli-graphics';
+import { nearestColor, normalizePalette, quantizeToPalette, quantizeToPaletteIndices } from 'broccoli-graphics';
 
 const palette = normalizePalette([[0, 0, 0], [255, 255, 255]]);
 const match = nearestColor({ r: 220, g: 230, b: 240 }, palette);
-const indexedLook = quantizeToPalette({ image, palette, outputChannels: 3 });
+const rgbLook = quantizeToPalette({ image, palette, outputChannels: 3 });
+const indexedLook = quantizeToPaletteIndices({ image, palette });
 ```
 
-The default distance is squared RGB distance and ties resolve to the first palette entry for deterministic output. `quantizeToPalette` maps 1/3/4-channel image buffers to nearest RGB/RGBA palette colors and accepts caller-provided output buffers for reuse.
+The default distance is squared RGB distance and ties resolve to the first palette entry for deterministic output. `quantizeToPalette` maps 1/3/4-channel image buffers to nearest RGB/RGBA palette colors, while `quantizeToPaletteIndices` emits one-byte palette indices for GIF encoders, indexed image formats, and compact intermediate buffers. Both accept caller-provided output buffers for reuse.
 
 ### ASCII conversion and rendering
 
@@ -239,7 +240,8 @@ See [`docs/architecture.md`](docs/architecture.md) for module boundaries and ext
 - Ordered dithering is `O(width * height)` time and writes one byte per output pixel for grayscale output.
 - Error diffusion is `O(width * height * kernelSize)` and currently uses a full `Float32Array` working buffer for clarity and deterministic tests. Serpentine scanning keeps the same complexity while improving directional artifact behavior; a rolling row-buffer implementation can reduce memory later.
 - ASCII conversion averages source pixels per output cell. Larger `cellWidth`/`cellHeight` reduce output size but still read each source pixel once.
-- Supplying reusable `output` buffers to dither functions avoids repeated allocations in animation loops.
+- Palette quantization is `O(width * height * paletteSize)`. The default squared RGB matcher avoids per-pixel object allocation in the hot path, and `quantizeToPaletteIndices` writes one byte per pixel for compact indexed intermediates.
+- Supplying reusable `output` buffers to dither and palette functions avoids repeated allocations in animation loops.
 
 ## Development
 
