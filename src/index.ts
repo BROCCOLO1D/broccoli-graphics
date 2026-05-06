@@ -53,3 +53,22 @@ export {
   type ErrorDiffusionKernel,
   type ErrorDiffusionOffset,
 } from './dither/error-diffusion.js';
+
+export {
+  DENSE_RAMP,
+  SIMPLE_RAMP,
+  charForLuminance,
+  validateRamp,
+  type RampMapOptions,
+} from './ascii/charset.js';
+
+export {
+  imageToAscii,
+  type AsciiCanvas,
+  type ImageToAsciiOptions,
+} from './ascii/convert.js';
+
+export {
+  renderAsciiText,
+  type RenderAsciiTextOptions,
+} from './render/text.js';
