@@ -1,4 +1,4 @@
-import { toGrayscale } from '../luminance.js';
+import { toGrayscale, type ToGrayscaleOptions } from '../luminance.js';
 import { assertPositiveInteger, assertValidImage, type PixelBuffer } from '../types.js';
 
 export interface ErrorDiffusionOffset {
@@ -121,7 +121,7 @@ export const quantizeLevel = (value: number, levels = 2): number => {
   return Math.round((level / (levels - 1)) * 255);
 };
 
-export interface ErrorDiffuseOptions {
+export interface ErrorDiffuseOptions extends ToGrayscaleOptions {
   readonly image: PixelBuffer;
   readonly kernel?: ErrorDiffusionKernel;
   readonly levels?: number;
@@ -161,7 +161,7 @@ export const errorDiffuse = (options: ErrorDiffuseOptions): PixelBuffer<Uint8Arr
   }
 
   const work = new Float32Array(pixelCount);
-  work.set(toGrayscale(image));
+  work.set(toGrayscale(image, options));
 
   for (let y = 0; y < image.height; y++) {
     const reverse = serpentine && y % 2 === 1;

@@ -43,4 +43,14 @@ describe('orderedDither', () => {
 
     expect([...output.data]).toEqual([0, 85, 170, 255]);
   });
+
+  it('passes luminance transfer options through RGB ordered dithering', () => {
+    const output = orderedDither({
+      image: { width: 1, height: 1, channels: 3, data: new Uint8Array([128, 128, 128]) },
+      matrix: createBayerMatrix(1),
+      transfer: 'linear',
+    });
+
+    expect([...output.data]).toEqual([0]);
+  });
 });

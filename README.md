@@ -156,9 +156,10 @@ import { createBayerMatrix, orderedDither } from 'broccoli-graphics';
 
 const matrix = createBayerMatrix(4);
 const output = orderedDither({ image, matrix, levels: 2 });
+const perceptualOutput = orderedDither({ image, matrix, levels: 2, transfer: 'linear' });
 ```
 
-Bayer matrix sizes must be powers of two. Ordered dithering is stateless per pixel, so it is a good fit for animation frames where deterministic output and low memory overhead matter.
+Bayer matrix sizes must be powers of two. Ordered dithering is stateless per pixel, so it is a good fit for animation frames where deterministic output and low memory overhead matter. RGB/RGBA inputs accept the same luminance options as `toGrayscale`, including custom coefficients, alpha background, and `transfer: 'linear'`.
 
 ### Error diffusion
 
@@ -174,10 +175,10 @@ import {
 
 const fs = errorDiffuse({ image, kernel: floydSteinbergKernel, levels: 2, serpentine: true });
 const atkinson = errorDiffuse({ image, kernel: atkinsonKernel, levels: 2, serpentine: true });
-const smoother = errorDiffuse({ image, kernel: sierraKernel, levels: 2 });
+const smoother = errorDiffuse({ image, kernel: sierraKernel, levels: 2, transfer: 'linear' });
 ```
 
-Built-in kernels cover Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite. Kernels are plain data (`dx`, `dy`, `weight`) so additional diffusion algorithms can be added without changing the scanline engine. Set `serpentine: true` to alternate scan direction by row and mirror horizontal kernel offsets, reducing one-way streaking artifacts in photographic previews while keeping output deterministic.
+Built-in kernels cover Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite. Kernels are plain data (`dx`, `dy`, `weight`) so additional diffusion algorithms can be added without changing the scanline engine. Set `serpentine: true` to alternate scan direction by row and mirror horizontal kernel offsets, reducing one-way streaking artifacts in photographic previews while keeping output deterministic. RGB/RGBA inputs share `toGrayscale` luminance options so ordered and error-diffusion pipelines can use the same brightness model.
 
 ### Palette utilities
 

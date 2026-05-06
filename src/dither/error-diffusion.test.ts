@@ -110,6 +110,16 @@ describe('errorDiffuse', () => {
     ]);
   });
 
+  it('passes luminance transfer options through RGB error diffusion', () => {
+    const output = errorDiffuse({
+      image: { width: 1, height: 1, channels: 3, data: new Uint8Array([128, 128, 128]) },
+      kernel: floydSteinbergKernel,
+      transfer: 'linear',
+    });
+
+    expect([...output.data]).toEqual([0]);
+  });
+
   it('supports caller-provided output buffers', () => {
     const outputBuffer = new Uint8Array(1);
     const output = errorDiffuse({
