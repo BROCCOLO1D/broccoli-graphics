@@ -70,11 +70,12 @@ console.log(renderAsciiText(ascii));
 
 ## Generated image examples
 
-The canonical example input is the committed close-up doll/anime-face photo at [`examples/input/doll-face.jpg`](examples/input/doll-face.jpg). The README assets below are generated deterministically with the dev-only Sharp + gifenc pipeline in [`scripts/generate-examples.ts`](scripts/generate-examples.ts); the runtime package remains dependency-free.
+The README assets below are generated deterministically from committed inputs in [`examples/input`](examples/input) with the dev-only Sharp + gifenc pipeline in [`scripts/generate-examples.ts`](scripts/generate-examples.ts); the runtime package remains dependency-free.
 
 | Original | Ordered Bayer | Floyd–Steinberg | Atkinson |
 | --- | --- | --- | --- |
 | ![Original resized doll face](examples/output/doll-face-original.png) | ![Ordered Bayer dithered doll face](examples/output/doll-face-ordered-bayer.png) | ![Floyd–Steinberg dithered doll face](examples/output/doll-face-floyd-steinberg.png) | ![Atkinson dithered doll face](examples/output/doll-face-atkinson.png) |
+| ![Original resized sun runner meme](examples/output/sun-runner-original.png) | ![Ordered Bayer dithered sun runner meme](examples/output/sun-runner-ordered-bayer.png) | ![Floyd–Steinberg dithered sun runner meme](examples/output/sun-runner-floyd-steinberg.png) | ![Atkinson dithered sun runner meme](examples/output/sun-runner-atkinson.png) |
 
 ### Animated conversion stages
 
@@ -95,7 +96,7 @@ npm run examples
 npm run verify:examples
 ```
 
-The script decodes and resizes the JPEG with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders a colorized ASCII canvas through `renderAsciiSvg`, rasterizes that SVG to a crisp PNG, and encodes a labeled conversion-stages GIF with dev-only `gifenc` for README embedding.
+The script decodes and resizes the input JPEGs with `sharp`, passes raw RGB buffers into the core typed-array algorithms, writes dithered PNGs, renders a colorized ASCII canvas through `renderAsciiSvg`, rasterizes that SVG to a crisp PNG, and encodes a labeled conversion-stages GIF with dev-only `gifenc` for README embedding.
 
 Core usage mirrors the generation pipeline:
 

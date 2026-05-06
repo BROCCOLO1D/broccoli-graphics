@@ -10,6 +10,10 @@ const pngAssets = [
   ['doll-face-floyd-steinberg.png', 360, 540],
   ['doll-face-atkinson.png', 360, 540],
   ['doll-face-ascii.png', 662, 722],
+  ['sun-runner-original.png', 360, 304],
+  ['sun-runner-ordered-bayer.png', 360, 304],
+  ['sun-runner-floyd-steinberg.png', 360, 304],
+  ['sun-runner-atkinson.png', 360, 304],
 ];
 
 const assert = (condition, message) => {

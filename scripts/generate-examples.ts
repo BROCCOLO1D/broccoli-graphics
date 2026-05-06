@@ -17,7 +17,8 @@ import {
 const { GIFEncoder, applyPalette, quantize } = gifenc;
 
 const outputDir = join(process.cwd(), 'examples', 'output');
-const inputPath = join(process.cwd(), 'examples', 'input', 'doll-face.jpg');
+const dollFaceInputPath = join(process.cwd(), 'examples', 'input', 'doll-face.jpg');
+const sunRunnerInputPath = join(process.cwd(), 'examples', 'input', 'sun-runner.jpg');
 const previewWidth = 360;
 const asciiSourceWidth = 180;
 const asciiCellWidth = 2;
@@ -32,7 +33,7 @@ interface RawGrayImage extends PixelBuffer<Uint8Array> {
   readonly channels: 1;
 }
 
-const loadRgbPreview = async (width: number): Promise<RawRgbImage> => {
+const loadRgbPreview = async (inputPath: string, width: number): Promise<RawRgbImage> => {
   const { data, info } = await sharp(inputPath)
     .rotate()
     .resize({ width, withoutEnlargement: true })
@@ -53,7 +54,7 @@ const loadRgbPreview = async (width: number): Promise<RawRgbImage> => {
 };
 
 const loadAsciiSource = async (): Promise<RawGrayImage> => {
-  const { data, info } = await sharp(inputPath)
+  const { data, info } = await sharp(dollFaceInputPath)
     .rotate()
     .extract(asciiCrop)
     .resize({ width: asciiSourceWidth, withoutEnlargement: true })
@@ -77,7 +78,7 @@ const loadAsciiSource = async (): Promise<RawGrayImage> => {
 };
 
 const loadAsciiColorSource = async (): Promise<RawRgbImage> => {
-  const { data, info } = await sharp(inputPath)
+  const { data, info } = await sharp(dollFaceInputPath)
     .rotate()
     .extract(asciiCrop)
     .resize({ width: asciiSourceWidth, withoutEnlargement: true })
@@ -106,23 +107,23 @@ const writeGrayscalePng = async (name: string, image: PixelBuffer<Uint8Array>): 
     .toFile(join(outputDir, name));
 };
 
-const generateDitherAssets = async (preview: RawRgbImage): Promise<void> => {
+const generateDitherAssets = async (inputPath: string, prefix: string, preview: RawRgbImage): Promise<void> => {
   await sharp(inputPath)
     .rotate()
     .resize({ width: previewWidth, withoutEnlargement: true })
     .png({ compressionLevel: 9, adaptiveFiltering: false })
-    .toFile(join(outputDir, 'doll-face-original.png'));
+    .toFile(join(outputDir, `${prefix}-original.png`));
 
   await writeGrayscalePng(
-    'doll-face-ordered-bayer.png',
+    `${prefix}-ordered-bayer.png`,
     orderedDither({ image: preview, matrix: createBayerMatrix(8), levels: 2 }),
   );
   await writeGrayscalePng(
-    'doll-face-floyd-steinberg.png',
+    `${prefix}-floyd-steinberg.png`,
     errorDiffuse({ image: preview, kernel: floydSteinbergKernel, levels: 2, serpentine: true }),
   );
   await writeGrayscalePng(
-    'doll-face-atkinson.png',
+    `${prefix}-atkinson.png`,
     errorDiffuse({ image: preview, kernel: atkinsonKernel, levels: 2, serpentine: true }),
   );
 };
@@ -233,9 +234,11 @@ const generateAnimatedGifAsset = async (): Promise<void> => {
 };
 
 mkdirSync(outputDir, { recursive: true });
-const preview = await loadRgbPreview(previewWidth);
-await generateDitherAssets(preview);
+const dollFacePreview = await loadRgbPreview(dollFaceInputPath, previewWidth);
+const sunRunnerPreview = await loadRgbPreview(sunRunnerInputPath, previewWidth);
+await generateDitherAssets(dollFaceInputPath, 'doll-face', dollFacePreview);
+await generateDitherAssets(sunRunnerInputPath, 'sun-runner', sunRunnerPreview);
 await generateAsciiAssets();
 await generateAnimatedGifAsset();
 
-console.log(`Generated doll-face README assets in ${outputDir}`);
+console.log(`Generated README assets in ${outputDir}`);
