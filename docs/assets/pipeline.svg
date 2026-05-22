@@ -1,0 +1,78 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">broccoli-graphics pipeline</title>
+  <desc id="desc">A visual pipeline showing typed array pixels transformed through luminance, dithering, palette, ASCII, SVG, and animation stages.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07130d"/>
+      <stop offset="0.45" stop-color="#0f2418"/>
+      <stop offset="1" stop-color="#182b11"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="180" y1="60" x2="1030" y2="310" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#99f6a3"/>
+      <stop offset="0.5" stop-color="#5eead4"/>
+      <stop offset="1" stop-color="#facc15"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="pixels" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#102519"/>
+      <rect width="9" height="9" x="1" y="1" fill="#7ddc75" opacity="0.9"/>
+      <rect width="9" height="9" x="11" y="11" fill="#f4d35e" opacity="0.75"/>
+    </pattern>
+    <style>
+      .label{font:700 26px ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;fill:#f7fee7}
+      .sub{font:500 16px ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;fill:#d9f99d;opacity:.9}
+      .mono{font:700 18px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#052e16}
+      .chip{fill:#ecfccb;stroke:#bef264;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1200" height="360" rx="34" fill="url(#bg)"/>
+  <circle cx="104" cy="78" r="82" fill="#22c55e" opacity="0.13"/>
+  <circle cx="1092" cy="300" r="118" fill="#facc15" opacity="0.13"/>
+  <path d="M149 191c124-99 256-130 396-89 148 43 221 167 359 167 72 0 129-29 174-67" stroke="url(#leaf)" stroke-width="20" stroke-linecap="round" opacity="0.34" filter="url(#glow)"/>
+
+  <text x="70" y="70" class="label">typed arrays in</text>
+  <text x="70" y="97" class="sub">Uint8Array · ImageData.data · raw RGB/RGBA</text>
+  <rect x="70" y="124" width="168" height="116" rx="18" fill="url(#pixels)" stroke="#86efac" stroke-width="2"/>
+
+  <g transform="translate(286 112)">
+    <rect class="chip" width="164" height="58" rx="18"/>
+    <text x="24" y="37" class="mono">luminance</text>
+    <rect class="chip" y="78" width="164" height="58" rx="18" opacity=".96"/>
+    <text x="34" y="115" class="mono">palette</text>
+  </g>
+  <path d="M250 182h48" stroke="#bbf7d0" stroke-width="6" stroke-linecap="round"/>
+  <path d="M450 140h54M450 218h54" stroke="#bbf7d0" stroke-width="6" stroke-linecap="round"/>
+
+  <g transform="translate(518 74)">
+    <rect width="190" height="212" rx="26" fill="#052e16" stroke="#4ade80" stroke-width="2"/>
+    <text x="28" y="46" class="label" font-size="24">dither</text>
+    <text x="28" y="76" class="sub">Bayer · Floyd</text>
+    <text x="28" y="101" class="sub">Atkinson · Sierra</text>
+    <g transform="translate(30 126)">
+      <rect width="16" height="16" fill="#f7fee7"/><rect x="20" width="16" height="16" fill="#14532d"/><rect x="40" width="16" height="16" fill="#f7fee7"/><rect x="60" width="16" height="16" fill="#14532d"/>
+      <rect y="20" width="16" height="16" fill="#14532d"/><rect x="20" y="20" width="16" height="16" fill="#f7fee7"/><rect x="40" y="20" width="16" height="16" fill="#14532d"/><rect x="60" y="20" width="16" height="16" fill="#f7fee7"/>
+      <rect y="40" width="16" height="16" fill="#f7fee7"/><rect x="20" y="40" width="16" height="16" fill="#14532d"/><rect x="40" y="40" width="16" height="16" fill="#f7fee7"/><rect x="60" y="40" width="16" height="16" fill="#14532d"/>
+    </g>
+  </g>
+  <path d="M715 180h58" stroke="#bbf7d0" stroke-width="6" stroke-linecap="round"/>
+
+  <g transform="translate(790 92)">
+    <rect width="160" height="78" rx="20" fill="#dcfce7" stroke="#86efac" stroke-width="2"/>
+    <text x="36" y="49" class="mono">ASCII</text>
+    <rect y="98" width="160" height="78" rx="20" fill="#cffafe" stroke="#5eead4" stroke-width="2"/>
+    <text x="50" y="147" class="mono">SVG</text>
+  </g>
+  <path d="M952 180h54" stroke="#bbf7d0" stroke-width="6" stroke-linecap="round"/>
+
+  <g transform="translate(1022 112)">
+    <rect width="110" height="136" rx="24" fill="#fef9c3" stroke="#fde047" stroke-width="2"/>
+    <circle cx="38" cy="50" r="18" fill="#22c55e"/>
+    <circle cx="58" cy="72" r="18" fill="#16a34a"/>
+    <circle cx="75" cy="50" r="18" fill="#84cc16"/>
+    <text x="23" y="116" class="mono">frames</text>
+  </g>
+  <text x="70" y="315" class="sub">dependency-free core · pure transforms · reusable output buffers · tree-shakable ESM/CJS</text>
+</svg>

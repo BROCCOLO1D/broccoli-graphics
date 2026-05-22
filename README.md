@@ -1,26 +1,47 @@
-# broccoli-graphics
+<h1 align="center">broccoli-graphics</h1>
 
-Small, dependency-free TypeScript graphics primitives for typed-array pixel buffers.
+<p align="center">
+  <strong>Small, dependency-free TypeScript graphics primitives for typed-array pixel buffers.</strong>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/broccoli-graphics"><img alt="npm package" src="https://img.shields.io/npm/v/broccoli-graphics?style=flat-square&color=65a30d"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-84cc16?style=flat-square"></a>
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-typed-3178c6?style=flat-square">
+  <img alt="runtime dependencies" src="https://img.shields.io/badge/runtime_dependencies-0-22c55e?style=flat-square">
+  <img alt="module formats" src="https://img.shields.io/badge/ESM%20%2B%20CJS-tree--shakable-14b8a6?style=flat-square">
+</p>
 
 <p align="center">
   <img src="examples/output/sun-runner-statement.gif" width="720" alt="Animated GIF converted with broccoli-graphics">
 </p>
 
+<p align="center">
+  <img src="docs/assets/pipeline.svg" width="900" alt="broccoli-graphics typed-array image pipeline">
+</p>
+
 Dither, quantize, convert to ASCII, render SVG/text, and build lightweight frame pipelines from raw buffers. The core works with `Uint8Array`, `Uint8ClampedArray`, and browser `ImageData.data`.
 
-## Status
+> **Status:** early `0.0.0` package. APIs are implemented and tested, but may change before the first npm release.
 
-Early `0.0.0` package. APIs are implemented and tested, but may change before the first npm release.
+## Why broccoli-graphics?
 
-## Features
+- **Typed-array first:** raw pixel buffers in, deterministic buffers/text/SVG out.
+- **Dependency-free core:** image decoding, GIF/video encoding, Canvas, and terminal orchestration stay outside runtime dependencies.
+- **Composable primitives:** luminance, palette, dithering, ASCII, rendering, and animation helpers can be imported independently.
+- **Docs-ready output:** generate stable PNG/SVG/GIF previews for READMEs, demos, tests, and visual snapshots.
 
-- BT.709 grayscale and luminance helpers.
-- Ordered and error-diffusion dithering.
-- Palette normalization, nearest-color matching, and quantization.
-- ASCII conversion plus plain text, ANSI, and SVG renderers.
-- Lazy frame helpers for simple animation pipelines.
-- Tree-shakable ESM/CJS exports.
-- No runtime dependencies.
+## Feature map
+
+| Area | What you get |
+| --- | --- |
+| Luminance | BT.709 grayscale, sRGB-linear relative luminance, optional alpha compositing. |
+| Dithering | Ordered Bayer plus Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Sierra, two-row Sierra, and Sierra Lite error diffusion. |
+| Palette | Palette normalization, nearest-color matching, RGB/RGBA quantization, and indexed palette output. |
+| ASCII | Image-to-ASCII conversion with brightness, contrast, gamma, and custom ramps. |
+| Rendering | Plain text, ANSI truecolor, and standalone SVG renderers. |
+| Animation | Lazy iterable frame helpers for mapping, timing, looping, and slicing frame streams. |
+| Packaging | Tree-shakable root and subpath exports for ESM/CJS consumers. |
 
 ## Install
 
@@ -83,13 +104,17 @@ The README assets below are generated deterministically from committed inputs in
 
 ### Animated conversion stages
 
-![Animated doll-face conversion stages](examples/output/doll-face-conversion-stages.gif)
+<p align="center">
+  <img src="examples/output/doll-face-conversion-stages.gif" width="720" alt="Animated doll-face conversion stages">
+</p>
 
 The GIF is generated from the same deterministic PNG outputs and labels each stage, giving README readers an at-a-glance view of how ordered dithering and error diffusion change the canonical input.
 
 ### ASCII SVG/PNG rendering
 
-![Rendered ASCII doll face](examples/output/doll-face-ascii.png)
+<p align="center">
+  <img src="examples/output/doll-face-ascii.png" width="720" alt="Rendered ASCII doll face">
+</p>
 
 The plain text backing file is also committed at [`examples/output/doll-face-ascii.txt`](examples/output/doll-face-ascii.txt), but README previews use rendered SVG/PNG assets so typography, spacing, and per-cell source colors are stable across viewers.
 
@@ -258,4 +283,4 @@ npm run lint   # TypeScript no-emit check
 npm run examples
 ```
 
-The current quality gates pass with 59 unit tests covering core algorithms and edge cases.
+The current quality gates pass with 64 unit tests covering core algorithms and edge cases.
